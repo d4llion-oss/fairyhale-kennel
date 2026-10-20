@@ -2,21 +2,43 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
+const rawUrl = process.env.DATABASE_URL;
+if (!rawUrl) {
   console.error('DATABASE_URL is not set');
   process.exit(1);
 }
 
-// DigitalOcean managed Postgres requires TLS; the CA is provided via DATABASE_CA_CERT
-// (base64 or PEM) or you can set PGSSLMODE=require to accept the DO cert chain.
+// pg lets sslmode in the connection string override the `ssl` option, so we
+// strip it from the URL and decide TLS behaviour explicitly here.
+const url = new URL(rawUrl);
+const sslmode = url.searchParams.get('sslmode');
+url.searchParams.delete('sslmode');
+const connectionString = url.toString();
+
+function loadCaCert() {
+  const raw = (process.env.DATABASE_CA_CERT || '').trim();
+  if (!raw || raw.startsWith('${')) return null; // unset, or an unsubstituted platform placeholder
+  if (raw.includes('BEGIN CERTIFICATE')) return raw;
+  try {
+    const decoded = Buffer.from(raw, 'base64').toString('utf8');
+    return decoded.includes('BEGIN CERTIFICATE') ? decoded : null;
+  } catch {
+    return null;
+  }
+}
+
 let ssl = false;
-if (process.env.DATABASE_CA_CERT) {
-  const raw = process.env.DATABASE_CA_CERT;
-  const ca = raw.includes('BEGIN CERTIFICATE') ? raw : Buffer.from(raw, 'base64').toString('utf8');
-  ssl = { ca, rejectUnauthorized: true };
-} else if (/sslmode=require/.test(connectionString) || process.env.PGSSLMODE === 'require') {
-  ssl = { rejectUnauthorized: false };
+const wantsTls = sslmode && sslmode !== 'disable' || process.env.PGSSLMODE === 'require' || process.env.NODE_ENV === 'production';
+if (wantsTls) {
+  const ca = loadCaCert();
+  if (ca) {
+    ssl = { ca, rejectUnauthorized: true };
+  } else {
+    // Managed Postgres uses a private CA. Without it we still encrypt the
+    // connection but cannot verify the server identity.
+    ssl = { rejectUnauthorized: false };
+    console.warn('DATABASE_CA_CERT not provided; TLS enabled without certificate verification');
+  }
 }
 
 const pool = new Pool({ connectionString, ssl, max: 10 });
