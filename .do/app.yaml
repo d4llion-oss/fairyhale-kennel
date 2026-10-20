@@ -52,28 +52,29 @@ services:
       - key: SEED_DEMO_DATA
         value: "false"
 
-jobs:
-  - name: migrate
-    kind: PRE_DEPLOY             # schema + admin seed before each deploy
-    github:
-      repo: d4llion-oss/fairyhale-kennel
-      branch: main
-      deploy_on_push: true
-    dockerfile_path: Dockerfile
-    instance_size_slug: apps-s-1vcpu-0.5gb
-    run_command: sh -c "node src/db/migrate.js && node src/db/seed.js"
-    envs:
-      - key: DATABASE_URL
-        scope: RUN_TIME
-        value: ${kennel-db.DATABASE_URL}
-      - key: DATABASE_CA_CERT
-        scope: RUN_TIME
-        value: ${kennel-db.CA_CERT}
-      - key: ADMIN_USERNAME
-        value: admin
-      - key: ADMIN_PASSWORD
-        scope: RUN_TIME
-        type: SECRET
-        value: "SET_IN_CONSOLE"
-      - key: SEED_DEMO_DATA
-        value: "false"
+# jobs: (migration runs in the container start script instead)
+# jobs:
+#  - name: migrate
+#    kind: PRE_DEPLOY             # schema + admin seed before each deploy
+#    github:
+#      repo: d4llion-oss/fairyhale-kennel
+#      branch: main
+#      deploy_on_push: true
+#    dockerfile_path: Dockerfile
+#    instance_size_slug: apps-s-1vcpu-0.5gb
+#    run_command: sh -c "node src/db/migrate.js && node src/db/seed.js"
+#    envs:
+#      - key: DATABASE_URL
+#        scope: RUN_TIME
+#        value: ${kennel-db.DATABASE_URL}
+#      - key: DATABASE_CA_CERT
+#        scope: RUN_TIME
+#        value: ${kennel-db.CA_CERT}
+#      - key: ADMIN_USERNAME
+#        value: admin
+#      - key: ADMIN_PASSWORD
+#        scope: RUN_TIME
+#        type: SECRET
+#        value: "SET_IN_CONSOLE"
+#      - key: SEED_DEMO_DATA
+#        value: "false"
