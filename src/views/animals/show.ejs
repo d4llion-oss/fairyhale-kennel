@@ -6,7 +6,7 @@
     <a class="btn btn-secondary" href="/animals/<%= animal.id %>/edit">Edit profile</a>
     <% if (animal.is_active) { %><a class="btn" href="/activities/new?animal=<%= animal.id %>">+ Log activity</a><% } %>
     <% if (user.role === 'admin') { %>
-      <form method="post" action="/animals/<%= animal.id %>/archive" class="inline" onsubmit="return confirm('<%= animal.is_active ? 'Archive' : 'Restore' %> <%= animal.name %>?')">
+      <form method="post" action="/animals/<%= animal.id %>/archive" class="inline" data-confirm="<%= animal.is_active ? 'Archive' : 'Restore' %> <%= animal.name %>?">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="active" value="<%= animal.is_active ? '0' : '1' %>">
         <button class="btn <%= animal.is_active ? 'btn-danger' : 'btn-secondary' %>"><%= animal.is_active ? 'Archive' : 'Restore' %></button>
       </form>
@@ -46,7 +46,7 @@
     <tbody>
     <% entries.forEach(e => { %>
       <tr><td class="small"><%= h.fmtDateTime(e.performed_at) %></td><td><%= e.activity_type %></td><td class="num"><%= h.fmtMinutes(e.duration_minutes) %></td><td><%= e.user_name %></td><td class="small muted"><%= e.notes || '' %></td>
-      <% if (user.role==='admin') { %><td><form method="post" action="/activities/<%= e.id %>/delete" onsubmit="return confirm('Remove this entry? The removal is recorded in the audit log.')"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm">Remove</button></form></td><% } %></tr>
+      <% if (user.role==='admin') { %><td><form method="post" action="/activities/<%= e.id %>/delete" data-confirm="Remove this entry? The removal is recorded in the audit log."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm">Remove</button></form></td><% } %></tr>
     <% }) %>
     </tbody>
   </table></div>

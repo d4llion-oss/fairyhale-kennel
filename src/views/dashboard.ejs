@@ -6,15 +6,36 @@
 </div>
 
 <div class="stats">
-  <div class="stat"><div class="n"><%= animals.length %></div><div class="l">Animals in care</div></div>
+  <div class="stat"><div class="n"><%= animals.length %></div><div class="l"><%= selectedTypes.length ? selectedTypes.join(' / ') + ' in care' : 'Animals in care' %></div></div>
   <div class="stat"><div class="n"><%= h.fmtMinutes(today.minutes) %></div><div class="l">Logged today · <%= today.entries %> entries</div></div>
   <div class="stat"><div class="n" style="color:<%= dueTasks.filter(t=>t.status==='overdue').length ? 'var(--red)' : 'var(--green-ink)' %>"><%= dueTasks.length %></div><div class="l">Tasks due · of <%= taskCount %></div></div>
 </div>
 
 <div class="grid grid-2">
   <div class="card">
-    <h2>Animals</h2>
-    <% if (!animals.length) { %><p class="muted">No animals yet. <a href="/animals/new">Add the first one.</a></p><% } else { %>
+    <div class="card-head">
+      <h2>Animals</h2>
+      <% if (availableTypes.length > 1) { %>
+      <form method="get" action="/" class="filter" data-autosubmit>
+        <details class="dropdown">
+          <summary class="btn btn-secondary btn-sm">
+            <%= selectedTypes.length ? selectedTypes.join(', ') : 'All types' %> ▾
+          </summary>
+          <div class="dropdown-panel">
+            <% availableTypes.forEach(t => { %>
+              <label class="check"><input type="checkbox" name="type" value="<%= t.animal_type %>" <%= selectedTypes.includes(t.animal_type) ? 'checked' : '' %>> <%= t.animal_type %> <span class="muted">(<%= t.n %>)</span></label>
+            <% }) %>
+            <div class="dropdown-actions">
+              <button class="btn btn-sm" type="submit">Apply</button>
+              <% if (selectedTypes.length) { %><a class="btn btn-secondary btn-sm" href="/">Clear</a><% } %>
+            </div>
+          </div>
+        </details>
+      </form>
+      <% } %>
+    </div>
+    <% if (!animals.length && selectedTypes.length) { %><p class="muted">No active animals of that type. <a href="/">Show all.</a></p>
+    <% } else if (!animals.length) { %><p class="muted">No animals yet. <a href="/animals/new">Add the first one.</a></p><% } else { %>
     <ul class="list">
       <% animals.forEach(a => { %>
       <li>

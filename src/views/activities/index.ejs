@@ -13,7 +13,7 @@
     <tbody>
     <% entries.forEach(e => { %>
       <tr><td class="small"><%= h.fmtDateTime(e.performed_at) %></td><td><a href="/animals/<%= e.animal_id %>"><%= e.animal_name %></a></td><td><%= e.activity_type %></td><td class="num"><%= h.fmtMinutes(e.duration_minutes) %></td><td><%= e.user_name %></td><td class="small muted"><%= e.notes || '' %></td><td class="small muted"><%= h.fmtDateTime(e.created_at) %></td>
-      <% if (user.role==='admin') { %><td><form method="post" action="/activities/<%= e.id %>/delete" onsubmit="return confirm('Remove this entry? The removal is recorded in the audit log.')"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm">Remove</button></form></td><% } %></tr>
+      <% if (user.role==='admin') { %><td><form method="post" action="/activities/<%= e.id %>/delete" data-confirm="Remove this entry? The removal is recorded in the audit log."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm">Remove</button></form></td><% } %></tr>
     <% }) %>
     </tbody>
   </table></div>

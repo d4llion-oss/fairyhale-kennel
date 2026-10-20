@@ -9,15 +9,20 @@ const router = express.Router();
 router.use(requireLogin);
 
 function parseEntry(body) {
+  const bulk = body.mode === 'bulk';
   const e = {
-    animal_id: clean(body.animal_id),
+    mode: bulk ? 'bulk' : 'single',
+    animal_id: bulk ? null : clean(body.animal_id),
+    animal_ids: bulk ? [...new Set([].concat(body.animal_ids || []).map(clean).filter(Boolean))] : [],
     activity_type: clean(body.activity_type),
     duration_minutes: parseInt(body.duration_minutes, 10),
     performed_at: clean(body.performed_at),
     notes: clean(body.notes),
   };
   const errors = [];
-  if (!e.animal_id) errors.push('Animal is required.');
+  if (bulk) {
+    if (!e.animal_ids.length) errors.push('Select at least one animal.');
+  } else if (!e.animal_id) errors.push('Animal is required.');
   if (!e.activity_type || !ACTIVITY_TYPES.includes(e.activity_type)) errors.push('Choose a valid activity type.');
   if (!Number.isInteger(e.duration_minutes) || e.duration_minutes < 1 || e.duration_minutes > 1440) errors.push('Duration must be between 1 and 1440 minutes.');
   if (e.performed_at) {
@@ -57,19 +62,32 @@ router.post('/', async (req, res, next) => {
   try {
     const { e, errors } = parseEntry(req.body);
     const animals = (await db.query('SELECT id, name, animal_type FROM animals WHERE is_active ORDER BY name')).rows;
-    if (!errors.length && !animals.some((a) => a.id === e.animal_id)) errors.push('Animal not found or not active.');
+    const byId = new Map(animals.map((a) => [a.id, a]));
+    const targets = e.mode === 'bulk' ? e.animal_ids.map((id) => byId.get(id)).filter(Boolean) : [byId.get(e.animal_id)].filter(Boolean);
+    if (!errors.length && (e.mode === 'bulk' ? targets.length !== e.animal_ids.length : !targets.length)) errors.push('One or more selected animals were not found or are not active.');
     if (errors.length) return res.status(400).render('activities/form', { title: 'Log activity', entry: e, animals, errors, types: ACTIVITY_TYPES });
-    const animal = animals.find((a) => a.id === e.animal_id);
+
     await db.withTransaction(async (c) => {
-      const { rows } = await c.query(
-        `INSERT INTO activity_entries (animal_id, user_id, activity_type, duration_minutes, performed_at, notes)
-         VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-        [e.animal_id, req.session.user.id, e.activity_type, e.duration_minutes, e.performed_at, e.notes]
-      );
-      await audit(req, { action: 'create', entityType: 'activity', entityId: rows[0].id, summary: `${e.activity_type} · ${e.duration_minutes} min with ${animal.name}`, after: rows[0] }, c);
+      for (const animal of targets) {
+        const { rows } = await c.query(
+          `INSERT INTO activity_entries (animal_id, user_id, activity_type, duration_minutes, performed_at, notes)
+           VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+          [animal.id, req.session.user.id, e.activity_type, e.duration_minutes, e.performed_at, e.notes]
+        );
+        await audit(req, {
+          action: 'create', entityType: 'activity', entityId: rows[0].id,
+          summary: `${e.activity_type} · ${e.duration_minutes} min with ${animal.name}${targets.length > 1 ? ` (bulk, ${targets.length} animals)` : ''}`,
+          after: rows[0],
+        }, c);
+      }
     });
-    req.session.flash = { type: 'success', text: `Logged ${e.duration_minutes} min of ${e.activity_type.toLowerCase()} with ${animal.name}.` };
-    res.redirect(req.body.return_to === 'animal' ? `/animals/${e.animal_id}` : '/activities');
+
+    if (targets.length === 1) {
+      req.session.flash = { type: 'success', text: `Logged ${e.duration_minutes} min of ${e.activity_type.toLowerCase()} with ${targets[0].name}.` };
+      return res.redirect(req.body.return_to === 'animal' ? `/animals/${targets[0].id}` : '/activities');
+    }
+    req.session.flash = { type: 'success', text: `Logged ${e.duration_minutes} min of ${e.activity_type.toLowerCase()} for ${targets.length} animals: ${targets.map((a) => a.name).join(', ')}.` };
+    res.redirect('/activities');
   } catch (e) { next(e); }
 });
 

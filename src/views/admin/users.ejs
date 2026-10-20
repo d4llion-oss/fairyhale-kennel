@@ -10,7 +10,7 @@
           <td><strong><%= u.display_name %></strong><div class="small muted">@<%= u.username %><%= me ? ' (you)' : '' %></div></td>
           <td>
             <form method="post" action="/admin/users/<%= u.id %>/role" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <select name="role" onchange="this.form.submit()" <%= me ? 'disabled' : '' %> style="width:auto;padding:.25rem .4rem">
+              <select name="role" data-autosubmit <%= me ? 'disabled' : '' %> style="width:auto;padding:.25rem .4rem">
                 <option value="user" <%= u.role==='user'?'selected':'' %>>user</option><option value="admin" <%= u.role==='admin'?'selected':'' %>>admin</option>
               </select></form>
           </td>
