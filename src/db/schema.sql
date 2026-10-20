@@ -1,7 +1,6 @@
 -- FairyHale Kennel Management — database schema
 -- Idempotent: safe to run repeatedly.
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ---------------------------------------------------------------
 -- Users & roles

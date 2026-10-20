@@ -41,7 +41,12 @@ if (wantsTls) {
   }
 }
 
-const pool = new Pool({ connectionString, ssl, max: 10 });
+// All app objects live in their own schema so we never depend on CREATE
+// rights on `public` (locked down by default on Postgres 15+ managed DBs).
+const SCHEMA = process.env.DATABASE_SCHEMA || 'kennel';
+if (!/^[a-z_][a-z0-9_]*$/.test(SCHEMA)) throw new Error('DATABASE_SCHEMA must be a simple identifier');
+
+const pool = new Pool({ connectionString, ssl, max: 10, options: `-c search_path=${SCHEMA}` });
 
 pool.on('error', (err) => {
   console.error('Unexpected PG pool error', err);
@@ -49,6 +54,7 @@ pool.on('error', (err) => {
 
 module.exports = {
   pool,
+  SCHEMA,
   query: (text, params) => pool.query(text, params),
   withTransaction: async (fn) => {
     const client = await pool.connect();
