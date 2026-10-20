@@ -41,13 +41,14 @@ npm run dev
 
 ## Deploy to DigitalOcean
 
-Code lives on **GitHub** (`d4llion-oss/fairyhale-kennel`). **GitHub Actions** (`.github/workflows/ci.yml`) runs the test suite and a Docker build on every push/PR. **DigitalOcean App Platform** watches `main` and rebuilds the Dockerfile on every push; a `PRE_DEPLOY` job runs the migration + admin seed before the new release goes live. The managed Postgres database is defined in the same spec.
+Code lives on **GitHub** (`d4llion-oss/fairyhale-kennel`). **GitHub Actions** (`.github/workflows/ci.yml`) runs the test suite and a Docker build on every push/PR. **DigitalOcean App Platform** watches `main` and rebuilds the Dockerfile on every push; the container's start script runs the (idempotent) migration + admin seed before starting the server. All tables live in a dedicated `kennel` schema.
 
 ### One-time setup
 
-1. In the DO console, authorize the DigitalOcean GitHub app for the `d4llion-oss` org/repo (App Platform → Create → GitHub) if you haven't already.
-2. `doctl apps create --spec .do/app.yaml`
-3. Set the two secrets in the app's settings (or pass them through the spec at create time): `SESSION_SECRET` (`openssl rand -hex 32`) and `ADMIN_PASSWORD`.
+1. Authorize the DigitalOcean GitHub app for the repo (App Platform → Create → GitHub).
+2. Create a managed Postgres cluster (Basic, smallest plan) named `fairyhale-kennel-db` in the same region. App Platform's inline "dev database" will **not** work: on Postgres 15+ it connects as a non-owner role that cannot create tables.
+3. `doctl apps create --spec .do/app.yaml` — this attaches the cluster as a trusted source and wires `DATABASE_URL` / `DATABASE_CA_CERT`.
+4. Set the two secrets in the app's settings: `SESSION_SECRET` (`openssl rand -hex 32`) and `ADMIN_PASSWORD`.
 
 After that, every push to `main` that passes CI is deployed automatically.
 

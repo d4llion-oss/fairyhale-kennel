@@ -1,80 +1,61 @@
-# DigitalOcean App Platform spec
-# First time:   doctl apps create --spec .do/app.yaml
-# Afterwards:   doctl apps update <app-id> --spec .do/app.yaml
+# DigitalOcean App Platform spec — mirrors the live app (id a2dd7acd-…).
+# Update the live app with:   doctl apps update <app-id> --spec .do/app.yaml
+# SESSION_SECRET / ADMIN_PASSWORD are stored encrypted in the live spec (EV[…]);
+# keep the placeholders here and set real values in the DO console.
 #
-# App Platform watches the GitHub repo and rebuilds the Dockerfile on every push
-# to main. SESSION_SECRET and ADMIN_PASSWORD are SECRET env vars: set them once
-# in the DO console (or at create time); the committed spec keeps placeholders.
+# Note: App Platform "dev databases" on Postgres 15+ connect as a non-owner
+# role with no CREATE rights, so the app uses an attached managed cluster.
 
 name: fairyhale-kennel
 region: nyc
 
 databases:
-  - name: kennel-db
+  - name: fairyhale-kennel-db
+    cluster_name: fairyhale-kennel-db   # managed Postgres cluster, attached as trusted source
     engine: PG
-    version: "16"
-    production: false         # dev database; switch to true for a backed-up managed cluster
-    db_name: fairyhale
-    db_user: fairyhale
+    version: "18"
+    production: true
 
 services:
-  - name: web
+  - name: fairyhale-kennel
     github:
       repo: d4llion-oss/fairyhale-kennel
       branch: main
       deploy_on_push: true
     dockerfile_path: Dockerfile
+    source_dir: /
     instance_count: 1
     instance_size_slug: apps-s-1vcpu-0.5gb
     http_port: 8080
     health_check:
       http_path: /healthz
-      initial_delay_seconds: 10
+      initial_delay_seconds: 15
     envs:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        scope: RUN_TIME
-        value: ${kennel-db.DATABASE_URL}
+        value: ${fairyhale-kennel-db.DATABASE_URL}
       - key: DATABASE_CA_CERT
-        scope: RUN_TIME
-        value: ${kennel-db.CA_CERT}
+        value: ${fairyhale-kennel-db.CA_CERT}
       - key: SESSION_SECRET
-        scope: RUN_TIME
         type: SECRET
         value: "SET_IN_CONSOLE"
       - key: ADMIN_USERNAME
         value: admin
       - key: ADMIN_PASSWORD
-        scope: RUN_TIME
         type: SECRET
         value: "SET_IN_CONSOLE"
       - key: SEED_DEMO_DATA
         value: "false"
 
-# jobs: (migration runs in the container start script instead)
-# jobs:
-#  - name: migrate
-#    kind: PRE_DEPLOY             # schema + admin seed before each deploy
-#    github:
-#      repo: d4llion-oss/fairyhale-kennel
-#      branch: main
-#      deploy_on_push: true
-#    dockerfile_path: Dockerfile
-#    instance_size_slug: apps-s-1vcpu-0.5gb
-#    run_command: sh -c "node src/db/migrate.js && node src/db/seed.js"
-#    envs:
-#      - key: DATABASE_URL
-#        scope: RUN_TIME
-#        value: ${kennel-db.DATABASE_URL}
-#      - key: DATABASE_CA_CERT
-#        scope: RUN_TIME
-#        value: ${kennel-db.CA_CERT}
-#      - key: ADMIN_USERNAME
-#        value: admin
-#      - key: ADMIN_PASSWORD
-#        scope: RUN_TIME
-#        type: SECRET
-#        value: "SET_IN_CONSOLE"
-#      - key: SEED_DEMO_DATA
-#        value: "false"
+ingress:
+  rules:
+    - component:
+        name: fairyhale-kennel
+      match:
+        path:
+          prefix: /
+
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
