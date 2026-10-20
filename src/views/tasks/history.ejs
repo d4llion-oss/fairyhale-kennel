@@ -1,0 +1,15 @@
+<%- include('../partials/head') %>
+<div class="page-head">
+  <div><h1><%= task.title %></h1><p class="muted"><%= frequencies[task.frequency] %><%= task.description ? ' · ' + task.description : '' %></p></div>
+  <div class="actions"><a class="btn btn-secondary" href="/tasks">← All tasks</a></div>
+</div>
+<div class="card">
+  <h2>Completion history</h2>
+  <% if (!completions.length) { %><p class="muted">Never completed.</p><% } else { %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Completed</th><th>By</th><th>Notes</th></tr></thead>
+    <tbody><% completions.forEach(c => { %><tr><td><%= h.fmtDateTime(c.completed_at) %></td><td><%= c.user_name %></td><td class="small muted"><%= c.notes || '' %></td></tr><% }) %></tbody>
+  </table></div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

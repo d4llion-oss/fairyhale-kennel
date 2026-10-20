@@ -1,0 +1,20 @@
+<%- include('../partials/head') %>
+<div class="page-head">
+  <div><h1>Reports</h1><p class="muted">Time logged in the last <%= days %> days.</p></div>
+  <div class="actions"><% [7,30,90].forEach(d => { %><a class="btn <%= d===days ? '' : 'btn-secondary' %> btn-sm" href="/admin/reports?days=<%= d %>"><%= d %> days</a><% }) %></div>
+</div>
+<% const table = (title, rows, label) => { const max = rows.length ? Math.max(...rows.map(r=>r.minutes)) : 0; %>
+<div class="card">
+  <h2><%= title %></h2>
+  <% if (!rows.length) { %><p class="muted">No data.</p><% } else { %>
+  <table><thead><tr><th><%= label %></th><th style="width:40%"></th><th class="num">Time</th><th class="num">Entries</th></tr></thead>
+  <tbody><% rows.forEach(r => { %><tr><td><% if (r.id) { %><a href="/animals/<%= r.id %>"><%= r.name %></a> <span class="muted small"><%= r.animal_type %></span><% } else { %><%= r.display_name || r.activity_type %><% } %></td><td><div class="bar"><span style="width:<%= Math.round(r.minutes/max*100) %>%"></span></div></td><td class="num"><%= h.fmtMinutes(r.minutes) %></td><td class="num"><%= r.entries %></td></tr><% }) %></tbody></table>
+  <% } %>
+</div>
+<% } %>
+<div class="grid grid-3" style="align-items:start">
+  <% table('By animal', byAnimal, 'Animal') %>
+  <% table('By staff member', byUser, 'Staff') %>
+  <% table('By activity type', byType, 'Activity') %>
+</div>
+<%- include('../partials/foot') %>

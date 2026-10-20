@@ -1,0 +1,27 @@
+<%- include('../partials/head') %>
+<div class="page-head"><div><h1><%= title %></h1></div></div>
+<div class="card" style="max-width:720px">
+  <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul></div><% } %>
+  <form method="post" action="<%= action %>" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="row">
+      <div><label for="name">Name</label><input id="name" name="name" type="text" value="<%= animal.name || '' %>" required maxlength="80"></div>
+      <div><label for="animal_type">Type of animal</label>
+        <select id="animal_type" name="animal_type" required>
+          <option value="">Select…</option>
+          <% types.forEach(t => { %><option <%= animal.animal_type === t ? 'selected' : '' %>><%= t %></option><% }) %>
+          <% if (animal.animal_type && !types.includes(animal.animal_type)) { %><option selected><%= animal.animal_type %></option><% } %>
+        </select></div>
+    </div>
+    <div class="row-3 row">
+      <div><label for="breed">Breed <span class="opt">(optional)</span></label><input id="breed" name="breed" type="text" value="<%= animal.breed || '' %>" maxlength="80"></div>
+      <div><label for="date_of_birth">Date of birth</label><input id="date_of_birth" name="date_of_birth" type="date" value="<%= animal.date_of_birth ? new Date(animal.date_of_birth).toISOString().slice(0,10) : '' %>"></div>
+      <div><label for="age_years_estimate">Estimated age (yrs) <span class="opt">if DOB unknown</span></label><input id="age_years_estimate" name="age_years_estimate" type="number" step="0.5" min="0" max="60" value="<%= animal.age_years_estimate ?? '' %>"></div>
+    </div>
+    <div><label for="dietary_requirements">Dietary requirements</label><textarea id="dietary_requirements" name="dietary_requirements" placeholder="Food, portions, schedule, allergies…"><%= animal.dietary_requirements || '' %></textarea></div>
+    <div><label for="medications">Medications</label><textarea id="medications" name="medications" placeholder="Medication, dose, timing…"><%= animal.medications || '' %></textarea></div>
+    <div><label for="notes">Notes</label><textarea id="notes" name="notes" placeholder="Temperament, handling tips, owner instructions…"><%= animal.notes || '' %></textarea></div>
+    <div class="actions"><button class="btn">Save</button><a class="btn btn-secondary" href="<%= animal.id ? '/animals/' + animal.id : '/animals' %>">Cancel</a></div>
+  </form>
+</div>
+<%- include('../partials/foot') %>

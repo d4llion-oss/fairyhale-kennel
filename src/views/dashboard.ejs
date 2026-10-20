@@ -1,0 +1,62 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div><h1>Good <%= new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening' %>, <%= user.displayName.split(' ')[0] %></h1>
+  <p class="muted"><%= h.fmtDate(new Date()) %></p></div>
+  <div class="actions"><a class="btn" href="/activities/new">+ Log activity</a></div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="n"><%= animals.length %></div><div class="l">Animals in care</div></div>
+  <div class="stat"><div class="n"><%= h.fmtMinutes(today.minutes) %></div><div class="l">Logged today · <%= today.entries %> entries</div></div>
+  <div class="stat"><div class="n" style="color:<%= dueTasks.filter(t=>t.status==='overdue').length ? 'var(--red)' : 'var(--green-ink)' %>"><%= dueTasks.length %></div><div class="l">Tasks due · of <%= taskCount %></div></div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Animals</h2>
+    <% if (!animals.length) { %><p class="muted">No animals yet. <a href="/animals/new">Add the first one.</a></p><% } else { %>
+    <ul class="list">
+      <% animals.forEach(a => { %>
+      <li>
+        <div><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <span class="muted small"><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></span>
+          <% if (a.medications) { %><div class="small muted">💊 <%= a.medications %></div><% } %></div>
+        <div style="text-align:right;white-space:nowrap">
+          <div class="small"><% if (a.minutes_today) { %><%= h.fmtMinutes(a.minutes_today) %> today<% } else { %><span class="muted">nothing today</span><% } %></div>
+          <a class="btn btn-secondary btn-sm" href="/activities/new?animal=<%= a.id %>">Log</a>
+        </div>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2>Tasks due</h2>
+    <% if (!dueTasks.length) { %><p class="muted">Everything is on schedule. <a href="/tasks">See all tasks.</a></p><% } else { %>
+    <ul class="list">
+      <% dueTasks.forEach(t => { %>
+      <li>
+        <div><strong><%= t.title %></strong> <span class="badge badge-<%= t.status %>"><%= t.status === 'overdue' ? 'Overdue' : 'Due soon' %></span>
+          <div class="small muted"><%= h.FREQUENCIES[t.frequency] %><%= t.last_completed_at ? ' · last ' + h.fmtDateTime(t.last_completed_at) : ' · never completed' %></div></div>
+        <form method="post" action="/tasks/<%= t.id %>/complete"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="return_to" value="dashboard"><button class="btn btn-sm">Done</button></form>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+  <h2>Recent activity</h2>
+  <% if (!recent.length) { %><p class="muted">No activity logged yet.</p><% } else { %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>When</th><th>Animal</th><th>Activity</th><th class="num">Time</th><th>By</th><th>Notes</th></tr></thead>
+    <tbody>
+    <% recent.forEach(e => { %>
+      <tr><td class="small"><%= h.fmtDateTime(e.performed_at) %></td><td><a href="/animals/<%= e.animal_id %>"><%= e.animal_name %></a></td><td><%= e.activity_type %></td><td class="num"><%= h.fmtMinutes(e.duration_minutes) %></td><td><%= e.user_name %></td><td class="small muted"><%= e.notes || '' %></td></tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</div>
+<%- include('partials/foot') %>

@@ -1,0 +1,33 @@
+<%- include('../partials/head') %>
+<div class="page-head"><div><h1>Log activity</h1><p class="muted">Record time spent with an animal. The entry is stamped with the server time when saved.</p></div></div>
+<div class="card" style="max-width:640px">
+  <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul></div><% } %>
+  <% if (!animals.length) { %><p class="muted">There are no active animals. <a href="/animals/new">Add one first.</a></p><% } else { %>
+  <form method="post" action="/activities" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="return_to" value="<%= entry.animal_id ? 'animal' : 'list' %>">
+    <div class="row">
+      <div><label for="animal_id">Animal</label>
+        <select id="animal_id" name="animal_id" required>
+          <option value="">Select…</option>
+          <% animals.forEach(a => { %><option value="<%= a.id %>" <%= entry.animal_id === a.id ? 'selected' : '' %>><%= a.name %> (<%= a.animal_type %>)</option><% }) %>
+        </select></div>
+      <div><label for="activity_type">Activity</label>
+        <select id="activity_type" name="activity_type" required>
+          <option value="">Select…</option>
+          <% types.forEach(t => { %><option <%= entry.activity_type === t ? 'selected' : '' %>><%= t %></option><% }) %>
+        </select></div>
+    </div>
+    <div class="row">
+      <div><label for="duration_minutes">Duration (minutes)</label><input id="duration_minutes" name="duration_minutes" type="number" min="1" max="1440" value="<%= entry.duration_minutes || '' %>" required>
+        <div class="actions" style="margin-top:.4rem">
+          <% [5,10,15,30,45,60].forEach(m => { %><button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('duration_minutes').value=<%= m %>"><%= m %></button><% }) %>
+        </div></div>
+      <div><label for="performed_at">When <span class="opt">(blank = now)</span></label><input id="performed_at" name="performed_at" type="datetime-local" value="<%= entry.performed_at ? new Date(entry.performed_at).toISOString().slice(0,16) : '' %>"></div>
+    </div>
+    <div><label for="notes">Notes <span class="opt">(optional)</span></label><textarea id="notes" name="notes" placeholder="Ate all food, limping on left rear, took meds without issue…"><%= entry.notes || '' %></textarea></div>
+    <div class="actions"><button class="btn">Save entry</button><a class="btn btn-secondary" href="<%= entry.animal_id ? '/animals/' + entry.animal_id : '/activities' %>">Cancel</a></div>
+  </form>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

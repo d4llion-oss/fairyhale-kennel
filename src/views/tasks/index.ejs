@@ -1,0 +1,38 @@
+<%- include('../partials/head') %>
+<div class="page-head">
+  <div><h1>Kennel tasks</h1><p class="muted">Recurring chores and how often they should be done.</p></div>
+  <div class="actions">
+    <% if (user.role === 'admin') { %>
+      <a class="btn btn-secondary" href="/tasks<%= showAll ? '' : '?all=1' %>"><%= showAll ? 'Hide archived' : 'Show archived' %></a>
+      <a class="btn" href="/tasks/new">+ Add task</a>
+    <% } %>
+  </div>
+</div>
+<div class="card">
+  <% if (!tasks.length) { %><p class="muted">No tasks defined yet.</p><% } else { %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Task</th><th>Frequency</th><th>Status</th><th>Last done</th><th></th></tr></thead>
+    <tbody>
+    <% tasks.forEach(t => { %>
+      <tr>
+        <td><strong><%= t.title %></strong> <% if (!t.is_active) { %><span class="badge badge-neutral">archived</span><% } %><% if (t.description) { %><div class="small muted"><%= t.description %></div><% } %></td>
+        <td><%= frequencies[t.frequency] %></td>
+        <td><% if (t.is_active) { %><span class="badge badge-<%= t.status %>"><%= { ok: 'On schedule', due_soon: 'Due soon', overdue: 'Overdue', as_needed: 'As needed' }[t.status] %></span><% } %></td>
+        <td class="small"><% if (t.last_completed_at) { %><%= h.fmtDateTime(t.last_completed_at) %><div class="muted">by <%= t.last_completed_by %></div><% } else { %><span class="muted">never</span><% } %></td>
+        <td style="white-space:nowrap">
+          <% if (t.is_active) { %>
+          <form method="post" action="/tasks/<%= t.id %>/complete" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm">Mark done</button></form>
+          <% } %>
+          <a class="btn btn-secondary btn-sm" href="/tasks/<%= t.id %>/history">History</a>
+          <% if (user.role === 'admin') { %>
+            <a class="btn btn-secondary btn-sm" href="/tasks/<%= t.id %>/edit">Edit</a>
+            <form method="post" action="/tasks/<%= t.id %>/archive" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="active" value="<%= t.is_active ? '0' : '1' %>"><button class="btn <%= t.is_active ? 'btn-danger' : 'btn-secondary' %> btn-sm"><%= t.is_active ? 'Archive' : 'Restore' %></button></form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

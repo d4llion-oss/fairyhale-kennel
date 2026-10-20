@@ -1,0 +1,16 @@
+<%- include('../partials/head') %>
+<div class="page-head"><div><h1><%= title %></h1></div></div>
+<div class="card" style="max-width:640px">
+  <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul></div><% } %>
+  <form method="post" action="<%= action %>" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div><label for="title">Task</label><input id="title" name="title" type="text" value="<%= task.title || '' %>" required maxlength="120"></div>
+    <div><label for="frequency">How often</label>
+      <select id="frequency" name="frequency" required>
+        <% Object.entries(frequencies).forEach(([k, v]) => { %><option value="<%= k %>" <%= task.frequency === k ? 'selected' : '' %>><%= v %></option><% }) %>
+      </select></div>
+    <div><label for="description">Description <span class="opt">(optional)</span></label><textarea id="description" name="description" placeholder="What does doing this task involve?"><%= task.description || '' %></textarea></div>
+    <div class="actions"><button class="btn">Save</button><a class="btn btn-secondary" href="/tasks">Cancel</a></div>
+  </form>
+</div>
+<%- include('../partials/foot') %>

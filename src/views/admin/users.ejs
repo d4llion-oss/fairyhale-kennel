@@ -1,0 +1,46 @@
+<%- include('../partials/head') %>
+<div class="page-head"><div><h1>Users</h1><p class="muted">Administrators manage animals, tasks, users and the audit log. Users log activity and complete tasks.</p></div></div>
+<div class="grid grid-2" style="grid-template-columns: 2fr 1fr">
+  <div class="card">
+    <div class="table-wrap"><table>
+      <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Created</th><th></th></tr></thead>
+      <tbody>
+      <% users.forEach(u => { const me = u.id === user.id; %>
+        <tr>
+          <td><strong><%= u.display_name %></strong><div class="small muted">@<%= u.username %><%= me ? ' (you)' : '' %></div></td>
+          <td>
+            <form method="post" action="/admin/users/<%= u.id %>/role" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <select name="role" onchange="this.form.submit()" <%= me ? 'disabled' : '' %> style="width:auto;padding:.25rem .4rem">
+                <option value="user" <%= u.role==='user'?'selected':'' %>>user</option><option value="admin" <%= u.role==='admin'?'selected':'' %>>admin</option>
+              </select></form>
+          </td>
+          <td><span class="badge <%= u.is_active ? 'badge-ok' : 'badge-neutral' %>"><%= u.is_active ? 'active' : 'inactive' %></span></td>
+          <td class="small muted"><%= h.fmtDate(u.created_at) %></td>
+          <td style="white-space:nowrap">
+            <% if (!me) { %>
+            <form method="post" action="/admin/users/<%= u.id %>/active" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="active" value="<%= u.is_active ? '0' : '1' %>"><button class="btn btn-sm <%= u.is_active ? 'btn-danger' : 'btn-secondary' %>"><%= u.is_active ? 'Deactivate' : 'Activate' %></button></form>
+            <% } %>
+            <details style="display:inline-block;margin-left:.4rem"><summary>Reset password</summary>
+              <form method="post" action="/admin/users/<%= u.id %>/password" class="stack" style="margin-top:.5rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="password" name="password" placeholder="New password (10+ chars)" minlength="10" required autocomplete="new-password"><button class="btn btn-sm">Set password</button></form>
+            </details>
+          </td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <h2>Add user</h2>
+    <% if (errors.length) { %><div class="errors"><ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul></div><% } %>
+    <form method="post" action="/admin/users" class="stack" autocomplete="off">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div><label>Display name</label><input type="text" name="display_name" value="<%= form.display_name || '' %>" required></div>
+      <div><label>Username</label><input type="text" name="username" value="<%= form.username || '' %>" pattern="[a-zA-Z0-9._-]{3,32}" required></div>
+      <div><label>Temporary password</label><input type="password" name="password" minlength="10" required autocomplete="new-password"><div class="help">Share it securely; they can change it under “My account”.</div></div>
+      <div><label>Role</label><select name="role"><option value="user" <%= form.role==='user'?'selected':'' %>>User</option><option value="admin" <%= form.role==='admin'?'selected':'' %>>Administrator</option></select></div>
+      <button class="btn">Create user</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/foot') %>

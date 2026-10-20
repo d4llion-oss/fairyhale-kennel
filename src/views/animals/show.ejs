@@ -1,0 +1,55 @@
+<%- include('../partials/head') %>
+<div class="page-head">
+  <div><h1><%= animal.name %> <% if (!animal.is_active) { %><span class="badge badge-neutral">archived</span><% } %></h1>
+  <p class="muted"><%= animal.animal_type %><%= animal.breed ? ' · ' + animal.breed : '' %> · <%= h.describeAge(animal) %></p></div>
+  <div class="actions">
+    <a class="btn btn-secondary" href="/animals/<%= animal.id %>/edit">Edit profile</a>
+    <% if (animal.is_active) { %><a class="btn" href="/activities/new?animal=<%= animal.id %>">+ Log activity</a><% } %>
+    <% if (user.role === 'admin') { %>
+      <form method="post" action="/animals/<%= animal.id %>/archive" class="inline" onsubmit="return confirm('<%= animal.is_active ? 'Archive' : 'Restore' %> <%= animal.name %>?')">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="active" value="<%= animal.is_active ? '0' : '1' %>">
+        <button class="btn <%= animal.is_active ? 'btn-danger' : 'btn-secondary' %>"><%= animal.is_active ? 'Archive' : 'Restore' %></button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Profile</h2>
+    <dl class="props">
+      <dt>Age</dt><dd><%= h.describeAge(animal) %><%= animal.date_of_birth ? ' (born ' + h.fmtDate(animal.date_of_birth) + ')' : '' %></dd>
+      <dt>Type</dt><dd><%= animal.animal_type %></dd>
+      <dt>Breed</dt><dd><%= animal.breed || '—' %></dd>
+      <dt>Diet</dt><dd><%= animal.dietary_requirements || '—' %></dd>
+      <dt>Medications</dt><dd><%= animal.medications || '—' %></dd>
+      <dt>Notes</dt><dd><%= animal.notes || '—' %></dd>
+    </dl>
+    <p class="small muted" style="margin:1rem 0 0">Added <%= h.fmtDateTime(animal.created_at) %> · updated <%= h.fmtDateTime(animal.updated_at) %></p>
+  </div>
+  <div class="card">
+    <h2>Last 7 days</h2>
+    <% if (!totals.length) { %><p class="muted">No activity in the past week.</p><% } else {
+      const max = Math.max(...totals.map(t => t.minutes)); const sum = totals.reduce((s,t)=>s+t.minutes,0); %>
+    <p class="muted small" style="margin-top:0"><%= h.fmtMinutes(sum) %> across <%= totals.reduce((s,t)=>s+t.n,0) %> entries</p>
+    <% totals.forEach(t => { %>
+      <div style="margin-bottom:.6rem"><div style="display:flex;justify-content:space-between" class="small"><span><%= t.activity_type %></span><span><%= h.fmtMinutes(t.minutes) %></span></div><div class="bar"><span style="width:<%= Math.round(t.minutes / max * 100) %>%"></span></div></div>
+    <% }) } %>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+  <h2>Activity history</h2>
+  <% if (!entries.length) { %><p class="muted">Nothing logged yet.</p><% } else { %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>When</th><th>Activity</th><th class="num">Time</th><th>By</th><th>Notes</th><% if (user.role==='admin') { %><th></th><% } %></tr></thead>
+    <tbody>
+    <% entries.forEach(e => { %>
+      <tr><td class="small"><%= h.fmtDateTime(e.performed_at) %></td><td><%= e.activity_type %></td><td class="num"><%= h.fmtMinutes(e.duration_minutes) %></td><td><%= e.user_name %></td><td class="small muted"><%= e.notes || '' %></td>
+      <% if (user.role==='admin') { %><td><form method="post" action="/activities/<%= e.id %>/delete" onsubmit="return confirm('Remove this entry? The removal is recorded in the audit log.')"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm">Remove</button></form></td><% } %></tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

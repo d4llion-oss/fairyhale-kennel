@@ -1,0 +1,16 @@
+<%- include('partials/head') %>
+<div class="auth">
+  <div class="brand-big"><span class="paw" aria-hidden="true"></span></div>
+  <h1>FairyHale Kennel</h1>
+  <p class="muted" style="text-align:center;margin-top:0">Sign in to log your time with the animals.</p>
+  <div class="card">
+    <% if (error) { %><div class="errors"><%= error %></div><% } %>
+    <form method="post" action="/login" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div><label for="username">Username</label><input id="username" name="username" type="text" autocomplete="username" autofocus required></div>
+      <div><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn" type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
+<%- include('partials/foot') %>
