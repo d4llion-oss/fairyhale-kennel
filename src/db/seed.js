@@ -23,8 +23,8 @@ const ADMIN_PASS = process.env.ADMIN_PASSWORD;
     if (rows.length) {
       await pool.query(
         `INSERT INTO audit_log (user_id, username, action, entity_type, entity_id, summary)
-         VALUES ($1, $2, 'create', 'user', $1::text, 'Initial admin account seeded')`,
-        [rows[0].id, ADMIN_USER]
+         VALUES ($1, $2, 'create', 'user', $3, 'Initial admin account seeded')`,
+        [rows[0].id, ADMIN_USER, String(rows[0].id)]
       );
       console.log(`Admin user "${ADMIN_USER}" created.`);
     } else {
