@@ -80,14 +80,14 @@ router.post('/', (req, res, next) => {
         try {
           const base = sharp(file.buffer, { failOn: 'none' }).rotate(); // honour EXIF orientation
           full = await base.clone().resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 82, mozjpeg: true }).toBuffer({ resolveWithObject: true });
-          thumb = await base.clone().resize({ width: 320, height: 320, fit: 'cover', position: 'attention' }).jpeg({ quality: 78 }).toBuffer();
+          thumb = await base.clone().resize({ width: 320, height: 320, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 78 }).toBuffer();
           meta = full.info;
         } catch (e) {
           skipped += 1; continue; // not a decodable image
         }
         const { rows } = await c.query(
-          `INSERT INTO animal_photos (animal_id, position, content_type, data, thumb, width, height, bytes, created_by)
-           VALUES ($1,$2,'image/jpeg',$3,$4,$5,$6,$7,$8) RETURNING id, position`,
+          `INSERT INTO animal_photos (animal_id, position, content_type, data, thumb, thumb_fit, width, height, bytes, created_by)
+           VALUES ($1,$2,'image/jpeg',$3,$4,'inside',$5,$6,$7,$8) RETURNING id, position`,
           [animal.id, slot, full.data, thumb, meta.width, meta.height, full.data.length, req.session.user.id]
         );
         taken.add(slot);

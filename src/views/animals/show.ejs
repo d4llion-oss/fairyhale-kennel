@@ -49,7 +49,7 @@
     <div class="gallery-thumbs">
       <% photos.forEach((p, i) => { %>
         <div class="thumb <%= i === 0 ? 'active' : '' %>" data-thumb="<%= i %>">
-          <button type="button" class="thumb-btn" data-gallery-go="<%= i %>" aria-label="Show photo <%= i + 1 %>"><img src="/animals/<%= animal.id %>/photos/<%= p.id %>?size=thumb" alt="" width="320" height="320" loading="lazy"></button>
+          <button type="button" class="thumb-btn" data-gallery-go="<%= i %>" aria-label="Show photo <%= i + 1 %>"><img src="/animals/<%= animal.id %>/photos/<%= p.id %>?size=thumb" alt="" loading="lazy"></button>
           <details class="thumb-menu"><summary aria-label="Photo options">⋯</summary>
             <div class="dropdown-panel">
               <form method="post" action="/animals/<%= animal.id %>/photos/<%= p.id %>/caption" class="stack" style="gap:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>">

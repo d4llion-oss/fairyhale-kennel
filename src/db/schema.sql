@@ -173,7 +173,8 @@ CREATE TABLE IF NOT EXISTS animal_photos (
   position     SMALLINT NOT NULL CHECK (position BETWEEN 1 AND 5),
   content_type TEXT NOT NULL,
   data         BYTEA NOT NULL,        -- full-size (max 1280px, JPEG)
-  thumb        BYTEA NOT NULL,        -- 320px thumbnail
+  thumb        BYTEA NOT NULL,        -- thumbnail, longest side 320px, aspect preserved
+  thumb_fit    TEXT NOT NULL DEFAULT 'inside',
   width        INTEGER NOT NULL,
   height       INTEGER NOT NULL,
   bytes        INTEGER NOT NULL,
@@ -195,3 +196,4 @@ BEGIN
     ALTER TABLE animal_photos ADD CONSTRAINT animal_photos_position_uniq UNIQUE (animal_id, position) DEFERRABLE INITIALLY DEFERRED;
   END IF;
 END $$;
+ALTER TABLE animal_photos ADD COLUMN IF NOT EXISTS thumb_fit TEXT NOT NULL DEFAULT 'cover';

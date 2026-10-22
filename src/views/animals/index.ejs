@@ -13,7 +13,7 @@
     <tbody>
     <% animals.forEach(a => { %>
       <tr>
-        <td><div class="with-avatar"><% if (a.photo_id) { %><img class="avatar" src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt=""><% } else { %><span class="avatar-placeholder" aria-hidden="true"></span><% } %><span><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <% if (!a.is_active) { %><span class="badge badge-neutral">archived</span><% } %></span></div></td>
+        <td><div class="with-avatar"><% if (a.photo_id) { %><span class="avatar-box"><img src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt="" width="75" height="75"></span><% } else { %><span class="avatar-placeholder" aria-hidden="true"></span><% } %><span><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <% if (!a.is_active) { %><span class="badge badge-neutral">archived</span><% } %></span></div></td>
         <td><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></td>
         <td><%= h.describeAge(a) %></td>
         <td class="small"><%= a.dietary_requirements || '—' %></td>

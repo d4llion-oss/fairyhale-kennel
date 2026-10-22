@@ -3,12 +3,26 @@ const fs = require('fs');
 const path = require('path');
 const { pool, SCHEMA } = require('./index');
 
+// Thumbnails were originally square-cropped; rebuild any that still are so
+// aspect ratios are preserved. Runs once per row, then is a no-op.
+async function regenerateThumbs() {
+  const { rows } = await pool.query("SELECT id, data FROM animal_photos WHERE thumb_fit <> 'inside'");
+  if (!rows.length) return;
+  const sharp = require('sharp');
+  for (const r of rows) {
+    const thumb = await sharp(r.data).resize({ width: 320, height: 320, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 78 }).toBuffer();
+    await pool.query("UPDATE animal_photos SET thumb=$1, thumb_fit='inside' WHERE id=$2", [thumb, r.id]);
+  }
+  console.log(`Regenerated ${rows.length} photo thumbnail(s).`);
+}
+
 (async () => {
   const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   try {
     await pool.query(`CREATE SCHEMA IF NOT EXISTS ${SCHEMA}`);
     await pool.query(sql);
     console.log('Schema applied.');
+    await regenerateThumbs();
   } catch (err) {
     console.error('Migration failed:', err.message);
     try {
