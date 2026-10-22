@@ -12,6 +12,8 @@ const { pool } = require('./db');
 const helpers = require('./lib/helpers');
 
 const app = express();
+// Cache-buster for static assets: changes on every deploy so browsers never serve stale CSS/JS.
+const ASSET_VERSION = (process.env.SOURCE_COMMIT || process.env.GIT_SHA || String(Date.now())).slice(0, 12);
 const PORT = process.env.PORT || 8080;
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -48,6 +50,7 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.csrfToken = csrf.generateToken(req, res);
   res.locals.h = helpers;
+  res.locals.assetV = ASSET_VERSION;
   res.locals.flash = req.session.flash || null;
   delete req.session.flash;
   res.locals.path = req.path;
