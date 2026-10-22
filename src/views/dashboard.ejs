@@ -39,7 +39,7 @@
     <ul class="list">
       <% animals.forEach(a => { %>
       <li>
-        <div class="with-avatar"><% if (a.photo_id) { %><span class="avatar-box"><img src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt="" width="75" height="75"></span><% } else { %><span class="avatar-placeholder" aria-hidden="true"></span><% } %>
+        <div class="with-avatar"><a class="avatar-link" href="/animals/<%= a.id %>" title="Open <%= a.name %>'s profile"><% if (a.photo_id) { %><span class="avatar-box"><img src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt="<%= a.name %>" width="75" height="75"></span><% } else { %><span class="avatar-placeholder"></span><% } %></a>
           <div><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <span class="muted small"><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></span>
           <% if (a.medications) { %><div class="small muted">💊 <%= a.medications %></div><% } %></div></div>
         <div style="text-align:right;white-space:nowrap">

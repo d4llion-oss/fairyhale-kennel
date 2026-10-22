@@ -190,3 +190,6 @@ table.compact th, table.compact td { padding: .4rem .5rem; }
 .avatar-box img { display: block; width: auto; height: auto; max-width: 75px; max-height: 75px; }
 .avatar-placeholder { width: 75px; height: 75px; border-radius: 8px; background: var(--bg-2); border: 1px dashed var(--line); flex: none; }
 .with-avatar { display: flex; align-items: center; gap: .6rem; }
+
+.avatar-link { display: block; flex: none; border-radius: 8px; transition: transform .12s ease, box-shadow .12s ease; }
+.avatar-link:hover, .avatar-link:focus-visible { transform: translateY(-1px); box-shadow: 0 0 0 2px var(--green); outline: none; }
