@@ -33,7 +33,8 @@ router.get('/', async (req, res, next) => {
   try {
     const showAll = req.query.all === '1';
     const { rows } = await db.query(
-      `SELECT a.*, COALESCE(SUM(e.duration_minutes),0)::int AS total_minutes, MAX(e.performed_at) AS last_activity_at
+      `SELECT a.*, COALESCE(SUM(e.duration_minutes),0)::int AS total_minutes, MAX(e.performed_at) AS last_activity_at,
+              (SELECT p.id FROM animal_photos p WHERE p.animal_id=a.id ORDER BY p.position LIMIT 1) AS photo_id
        FROM animals a LEFT JOIN activity_entries e ON e.animal_id=a.id
        ${showAll ? '' : 'WHERE a.is_active'}
        GROUP BY a.id ORDER BY a.is_active DESC, a.name`
@@ -71,18 +72,21 @@ async function loadAnimal(id) {
   return rows[0];
 }
 
+router.use('/:id/photos', require('./photos'));
+
 router.get('/:id', async (req, res, next) => {
   try {
     const animal = await loadAnimal(req.params.id);
     if (!animal) return res.status(404).render('error', { title: 'Not found', status: 404, message: 'Animal not found.' });
-    const [entries, totals] = await Promise.all([
+    const [entries, totals, photos] = await Promise.all([
       db.query(`SELECT e.*, u.display_name AS user_name FROM activity_entries e JOIN users u ON u.id=e.user_id
                 WHERE e.animal_id=$1 ORDER BY e.performed_at DESC LIMIT 100`, [animal.id]),
       db.query(`SELECT activity_type, SUM(duration_minutes)::int AS minutes, COUNT(*)::int AS n
                 FROM activity_entries WHERE animal_id=$1 AND performed_at >= now() - interval '7 days'
                 GROUP BY activity_type ORDER BY minutes DESC`, [animal.id]),
+      db.query('SELECT id, position, caption, width, height, bytes, created_at FROM animal_photos WHERE animal_id=$1 ORDER BY position', [animal.id]),
     ]);
-    res.render('animals/show', { title: animal.name, animal, entries: entries.rows, totals: totals.rows, activityTypes: ACTIVITY_TYPES });
+    res.render('animals/show', { title: animal.name, animal, entries: entries.rows, totals: totals.rows, photos: photos.rows, maxPhotos: 5, activityTypes: ACTIVITY_TYPES });
   } catch (e) { next(e); }
 });
 

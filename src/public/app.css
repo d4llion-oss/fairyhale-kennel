@@ -160,3 +160,30 @@ label.check input { accent-color: var(--green); width: 16px; height: 16px; margi
 .day-head { display: flex; justify-content: space-between; align-items: baseline; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: .4rem .7rem; margin: .9rem 0 .25rem; }
 table.compact th, table.compact td { padding: .4rem .5rem; }
 .card-head h2 a { text-decoration: none; }
+
+/* Photo gallery */
+.gallery-card { margin-bottom: 1rem; }
+.gallery-stage { position: relative; background: #0b0f0d; border-radius: 8px; overflow: hidden; min-height: 200px; }
+.gallery-slide { margin: 0; }
+.gallery-slide a { display: block; }
+.gallery-slide img { display: block; width: 100%; height: auto; max-height: 520px; object-fit: contain; background: #0b0f0d; }
+.gallery-slide figcaption { display: flex; justify-content: space-between; gap: 1rem; padding: .5rem .75rem; font-size: .9rem; background: var(--bg-2); border-top: 1px solid var(--line); }
+.gallery-nav { position: absolute; top: 0; bottom: 42px; width: 56px; border: 0; background: linear-gradient(90deg, rgba(0,0,0,.45), transparent); color: #fff; font-size: 2.4rem; cursor: pointer; opacity: .75; }
+.gallery-nav:hover { opacity: 1; }
+.gallery-nav.prev { left: 0; }
+.gallery-nav.next { right: 0; background: linear-gradient(270deg, rgba(0,0,0,.45), transparent); }
+.gallery-thumbs { display: flex; gap: .5rem; margin-top: .6rem; flex-wrap: wrap; }
+.thumb { position: relative; width: 84px; }
+.thumb-btn { display: block; padding: 0; border: 2px solid transparent; border-radius: 6px; overflow: hidden; background: none; cursor: pointer; width: 84px; height: 84px; }
+.thumb-btn img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.thumb.active .thumb-btn { border-color: var(--green-ink); }
+.thumb-menu { position: absolute; top: 4px; right: 4px; }
+.thumb-menu > summary { list-style: none; cursor: pointer; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1; }
+.thumb-menu > summary::-webkit-details-marker { display: none; }
+.thumb-menu .dropdown-panel { left: 0; right: auto; min-width: 200px; }
+.upload-form label { cursor: pointer; }
+
+/* Avatar on lists */
+.avatar { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--bg-2); flex: none; }
+.avatar-placeholder { width: 40px; height: 40px; border-radius: 8px; background: var(--bg-2); border: 1px dashed var(--line); flex: none; }
+.with-avatar { display: flex; align-items: center; gap: .6rem; }

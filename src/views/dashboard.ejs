@@ -39,8 +39,9 @@
     <ul class="list">
       <% animals.forEach(a => { %>
       <li>
-        <div><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <span class="muted small"><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></span>
-          <% if (a.medications) { %><div class="small muted">💊 <%= a.medications %></div><% } %></div>
+        <div class="with-avatar"><% if (a.photo_id) { %><img class="avatar" src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt=""><% } else { %><span class="avatar-placeholder" aria-hidden="true"></span><% } %>
+          <div><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <span class="muted small"><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></span>
+          <% if (a.medications) { %><div class="small muted">💊 <%= a.medications %></div><% } %></div></div>
         <div style="text-align:right;white-space:nowrap">
           <div class="small"><% if (a.minutes_today) { %><%= h.fmtMinutes(a.minutes_today) %> today<% } else { %><span class="muted">nothing today</span><% } %></div>
           <a class="btn btn-secondary btn-sm" href="/activities/new?animal=<%= a.id %>">Log</a>

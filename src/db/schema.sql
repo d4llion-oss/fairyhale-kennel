@@ -162,3 +162,36 @@ BEGIN
     EXECUTE format('CREATE TRIGGER trg_%s_updated BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION set_updated_at()', t, t);
   END LOOP;
 END $$;
+
+-- ---------------------------------------------------------------
+-- Animal photos (up to 5 per animal, stored in the database so they
+-- survive container redeploys; resized on upload)
+-- ---------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS animal_photos (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  animal_id    UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  position     SMALLINT NOT NULL CHECK (position BETWEEN 1 AND 5),
+  content_type TEXT NOT NULL,
+  data         BYTEA NOT NULL,        -- full-size (max 1280px, JPEG)
+  thumb        BYTEA NOT NULL,        -- 320px thumbnail
+  width        INTEGER NOT NULL,
+  height       INTEGER NOT NULL,
+  bytes        INTEGER NOT NULL,
+  caption      TEXT,
+  created_by   UUID REFERENCES users(id),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- Deferred so photos can be renumbered within one transaction.
+  CONSTRAINT animal_photos_position_uniq UNIQUE (animal_id, position) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE INDEX IF NOT EXISTS idx_animal_photos_animal ON animal_photos (animal_id, position);
+
+-- Ensure the deferrable uniqueness constraint exists on older tables.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'animal_photos_animal_id_position_key') THEN
+    ALTER TABLE animal_photos DROP CONSTRAINT animal_photos_animal_id_position_key;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'animal_photos_position_uniq') THEN
+    ALTER TABLE animal_photos ADD CONSTRAINT animal_photos_position_uniq UNIQUE (animal_id, position) DEFERRABLE INITIALLY DEFERRED;
+  END IF;
+END $$;

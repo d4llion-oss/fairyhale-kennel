@@ -12,7 +12,8 @@ router.get('/', requireLogin, async (req, res, next) => {
     let selectedTypes = [].concat(req.query.type || []).map((t) => String(t).trim()).filter(Boolean);
     const [animals, tasks, recent, today, typeRows] = await Promise.all([
       db.query(`SELECT a.*, COALESCE(SUM(e.duration_minutes) FILTER (WHERE e.performed_at >= now() - interval '24 hours'),0)::int AS minutes_today,
-                       MAX(e.performed_at) AS last_activity_at
+                       MAX(e.performed_at) AS last_activity_at,
+                       (SELECT p.id FROM animal_photos p WHERE p.animal_id=a.id ORDER BY p.position LIMIT 1) AS photo_id
                 FROM animals a LEFT JOIN activity_entries e ON e.animal_id = a.id
                 WHERE a.is_active ${selectedTypes.length ? 'AND a.animal_type = ANY($1)' : ''}
                 GROUP BY a.id ORDER BY a.name`, selectedTypes.length ? [selectedTypes] : []),

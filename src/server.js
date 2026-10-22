@@ -6,7 +6,7 @@ const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
-const { doubleCsrf } = require('csrf-csrf');
+const csrf = require('./lib/csrf');
 
 const { pool } = require('./db');
 const helpers = require('./lib/helpers');
@@ -40,19 +40,13 @@ app.use(
   })
 );
 
-// CSRF (double-submit cookie)
-const { doubleCsrfProtection, generateToken } = doubleCsrf({
-  getSecret: () => process.env.SESSION_SECRET,
-  cookieName: isProd ? '__Host-fh.csrf' : 'fh.csrf',
-  cookieOptions: { sameSite: 'lax', secure: isProd, path: '/' },
-  getTokenFromRequest: (req) => req.body && req.body._csrf,
-});
-app.use(doubleCsrfProtection);
+// CSRF (double-submit cookie); multipart photo uploads validate after multer
+app.use(csrf.protect);
 
 // Locals available to every view
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
-  res.locals.csrfToken = generateToken(req, res);
+  res.locals.csrfToken = csrf.generateToken(req, res);
   res.locals.h = helpers;
   res.locals.flash = req.session.flash || null;
   delete req.session.flash;

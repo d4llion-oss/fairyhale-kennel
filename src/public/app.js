@@ -58,3 +58,35 @@
     document.addEventListener('click', function (ev) { if (d.open && !d.contains(ev.target)) d.open = false; });
   });
 })();
+
+// Photo gallery: prev/next/thumbnail navigation + arrow keys
+(function () {
+  'use strict';
+  document.querySelectorAll('[data-gallery]').forEach(function (g) {
+    var slides = Array.prototype.slice.call(g.querySelectorAll('[data-slide]'));
+    var thumbs = Array.prototype.slice.call(g.querySelectorAll('[data-thumb]'));
+    if (slides.length < 2) return;
+    var i = 0;
+    function show(n) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach(function (s, k) { s.hidden = k !== i; });
+      thumbs.forEach(function (t, k) { t.classList.toggle('active', k === i); });
+    }
+    g.querySelectorAll('[data-gallery-prev]').forEach(function (b) { b.addEventListener('click', function () { show(i - 1); }); });
+    g.querySelectorAll('[data-gallery-next]').forEach(function (b) { b.addEventListener('click', function () { show(i + 1); }); });
+    g.querySelectorAll('[data-gallery-go]').forEach(function (b) { b.addEventListener('click', function () { show(parseInt(b.dataset.galleryGo, 10)); }); });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.target.matches('input, textarea, select')) return;
+      if (ev.key === 'ArrowLeft') show(i - 1);
+      if (ev.key === 'ArrowRight') show(i + 1);
+    });
+    // Swipe on touch devices
+    var x0 = null;
+    g.addEventListener('touchstart', function (ev) { x0 = ev.touches[0].clientX; }, { passive: true });
+    g.addEventListener('touchend', function (ev) {
+      if (x0 == null) return;
+      var dx = ev.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 40) show(dx < 0 ? i + 1 : i - 1);
+    }, { passive: true });
+  });
+})();

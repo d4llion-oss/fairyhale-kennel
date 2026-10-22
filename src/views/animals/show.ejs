@@ -15,6 +15,56 @@
   </div>
 </div>
 
+<div class="card gallery-card">
+  <div class="card-head">
+    <h2>Photos <span class="muted small" style="font-family:inherit;font-weight:400"><%= photos.length %> of <%= maxPhotos %></span></h2>
+    <% if (photos.length < maxPhotos) { %>
+    <form method="post" action="/animals/<%= animal.id %>/photos" enctype="multipart/form-data" class="inline upload-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label class="btn btn-secondary btn-sm" style="margin:0">
+        <input type="file" name="photos" accept="image/*" multiple capture="environment" data-autosubmit hidden>
+        + Add photo<%= maxPhotos - photos.length > 1 ? 's' : '' %>
+      </label>
+      <noscript><button class="btn btn-sm">Upload</button></noscript>
+    </form>
+    <% } %>
+  </div>
+  <% if (!photos.length) { %>
+    <p class="muted" style="margin:0">No photos yet. Add up to <%= maxPhotos %> — the first one is shown on the dashboard and animal list.</p>
+  <% } else { %>
+  <div class="gallery" data-gallery>
+    <div class="gallery-stage">
+      <% if (photos.length > 1) { %><button type="button" class="gallery-nav prev" data-gallery-prev aria-label="Previous photo">‹</button><% } %>
+      <% photos.forEach((p, i) => { %>
+        <figure class="gallery-slide" data-slide="<%= i %>" <%= i ? 'hidden' : '' %>>
+          <a href="/animals/<%= animal.id %>/photos/<%= p.id %>" target="_blank" rel="noopener"><img src="/animals/<%= animal.id %>/photos/<%= p.id %>" alt="<%= p.caption || animal.name + ' photo ' + p.position %>" width="<%= p.width %>" height="<%= p.height %>" loading="<%= i ? 'lazy' : 'eager' %>"></a>
+          <figcaption>
+            <span><%= p.caption || '' %></span>
+            <span class="muted small"><%= i + 1 %> / <%= photos.length %> · <%= h.fmtDate(p.created_at) %></span>
+          </figcaption>
+        </figure>
+      <% }) %>
+      <% if (photos.length > 1) { %><button type="button" class="gallery-nav next" data-gallery-next aria-label="Next photo">›</button><% } %>
+    </div>
+    <div class="gallery-thumbs">
+      <% photos.forEach((p, i) => { %>
+        <div class="thumb <%= i === 0 ? 'active' : '' %>" data-thumb="<%= i %>">
+          <button type="button" class="thumb-btn" data-gallery-go="<%= i %>" aria-label="Show photo <%= i + 1 %>"><img src="/animals/<%= animal.id %>/photos/<%= p.id %>?size=thumb" alt="" width="320" height="320" loading="lazy"></button>
+          <details class="thumb-menu"><summary aria-label="Photo options">⋯</summary>
+            <div class="dropdown-panel">
+              <form method="post" action="/animals/<%= animal.id %>/photos/<%= p.id %>/caption" class="stack" style="gap:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="text" name="caption" value="<%= p.caption || '' %>" placeholder="Caption" maxlength="140"><button class="btn btn-sm">Save caption</button></form>
+              <% if (i > 0) { %><form method="post" action="/animals/<%= animal.id %>/photos/<%= p.id %>/primary" style="margin-top:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-secondary btn-sm" style="width:100%">Make primary</button></form><% } %>
+              <form method="post" action="/animals/<%= animal.id %>/photos/<%= p.id %>/delete" data-confirm="Remove this photo of <%= animal.name %>?" style="margin-top:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm" style="width:100%">Remove</button></form>
+            </div>
+          </details>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+</div>
+
 <div class="grid grid-2">
   <div class="card">
     <h2>Profile</h2>
