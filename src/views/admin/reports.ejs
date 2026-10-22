@@ -1,20 +1,84 @@
 <%- include('../partials/head') %>
+<% const qs = (extra) => { const p = new URLSearchParams({ from: range.from, to: range.to }); if (range.animalId) p.set('animal', range.animalId); Object.entries(extra || {}).forEach(([k, v]) => v == null ? p.delete(k) : p.set(k, v)); return p.toString(); };
+   const dayLabel = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+   const timeLabel = (ts) => new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: report.timezone });
+   const preset = (days) => { const t = new Date(); const f = new Date(t.getTime() - (days - 1) * 86400000); return qs({ from: f.toISOString().slice(0,10), to: t.toISOString().slice(0,10) }); }; %>
 <div class="page-head">
-  <div><h1>Reports</h1><p class="muted">Time logged in the last <%= days %> days.</p></div>
-  <div class="actions"><% [7,30,90].forEach(d => { %><a class="btn <%= d===days ? '' : 'btn-secondary' %> btn-sm" href="/admin/reports?days=<%= d %>"><%= d %> days</a><% }) %></div>
+  <div><h1>Reports<%= report.animal ? ' · ' + report.animal.name : '' %></h1>
+  <p class="muted">Activity per animal, per day · <%= dayLabel(report.from) %> – <%= dayLabel(report.to) %> · times in <%= report.timezone %></p></div>
+  <div class="actions">
+    <a class="btn" href="/admin/reports.pdf?<%= qs() %>">Export PDF<%= report.animal ? ' · ' + report.animal.name : ' · all animals' %></a>
+  </div>
 </div>
-<% const table = (title, rows, label) => { const max = rows.length ? Math.max(...rows.map(r=>r.minutes)) : 0; %>
+
 <div class="card">
-  <h2><%= title %></h2>
-  <% if (!rows.length) { %><p class="muted">No data.</p><% } else { %>
-  <table><thead><tr><th><%= label %></th><th style="width:40%"></th><th class="num">Time</th><th class="num">Entries</th></tr></thead>
-  <tbody><% rows.forEach(r => { %><tr><td><% if (r.id) { %><a href="/animals/<%= r.id %>"><%= r.name %></a> <span class="muted small"><%= r.animal_type %></span><% } else { %><%= r.display_name || r.activity_type %><% } %></td><td><div class="bar"><span style="width:<%= Math.round(r.minutes/max*100) %>%"></span></div></td><td class="num"><%= h.fmtMinutes(r.minutes) %></td><td class="num"><%= r.entries %></td></tr><% }) %></tbody></table>
-  <% } %>
+  <form method="get" action="/admin/reports" class="row-3 row" style="align-items:end">
+    <div><label for="from">From</label><input type="date" id="from" name="from" value="<%= range.from %>"></div>
+    <div><label for="to">To</label><input type="date" id="to" name="to" value="<%= range.to %>"></div>
+    <div><label for="animal">Animal</label>
+      <div style="display:flex;gap:.5rem">
+        <select id="animal" name="animal">
+          <option value="">All animals</option>
+          <% (report.allAnimals || [report.animal]).forEach(a => { %><option value="<%= a.id %>" <%= range.animalId === a.id ? 'selected' : '' %>><%= a.name %> (<%= a.animal_type %>)</option><% }) %>
+        </select>
+        <button class="btn">Run</button>
+      </div></div>
+  </form>
+  <div class="actions" style="margin-top:.75rem">
+    <span class="muted small">Quick ranges:</span>
+    <a class="btn btn-secondary btn-sm" href="/admin/reports?<%= preset(1) %>">Today</a>
+    <a class="btn btn-secondary btn-sm" href="/admin/reports?<%= preset(7) %>">7 days</a>
+    <a class="btn btn-secondary btn-sm" href="/admin/reports?<%= preset(30) %>">30 days</a>
+    <a class="btn btn-secondary btn-sm" href="/admin/reports?<%= preset(90) %>">90 days</a>
+    <% if (range.animalId) { %><a class="btn btn-secondary btn-sm" href="/admin/reports?<%= qs({ animal: null }) %>">All animals</a><% } %>
+  </div>
+</div>
+
+<div class="stats" style="margin-top:1rem">
+  <div class="stat"><div class="n"><%= h.fmtMinutes(report.totals.minutes) %></div><div class="l">Total time</div></div>
+  <div class="stat"><div class="n"><%= report.totals.entries %></div><div class="l">Entries</div></div>
+  <div class="stat"><div class="n"><%= report.totals.days %></div><div class="l">Days with activity</div></div>
+  <% if (!report.animal) { %><div class="stat"><div class="n"><%= report.totals.animals %></div><div class="l">Animals</div></div><% } %>
+</div>
+
+<% if (!report.animals.length) { %>
+  <div class="card"><p class="muted" style="margin:0">No activity was logged in this period<%= report.animal ? ' for ' + report.animal.name : '' %>.</p></div>
+<% } %>
+
+<% if (!report.animal && report.animals.length > 1) { %>
+<div class="card">
+  <h2>By animal</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Animal</th><th>Type</th><th class="num">Days</th><th class="num">Entries</th><th class="num">Time</th><th></th></tr></thead>
+    <tbody>
+    <% report.animals.forEach(a => { %>
+      <tr><td><a href="#animal-<%= a.id %>"><strong><%= a.name %></strong></a></td><td><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></td><td class="num"><%= a.days.length %></td><td class="num"><%= a.entries %></td><td class="num"><%= h.fmtMinutes(a.minutes) %></td>
+      <td style="white-space:nowrap"><a class="btn btn-secondary btn-sm" href="/admin/reports?<%= qs({ animal: a.id }) %>">Only <%= a.name %></a> <a class="btn btn-secondary btn-sm" href="/admin/reports.pdf?<%= qs({ animal: a.id }) %>">PDF</a></td></tr>
+    <% }) %>
+    </tbody>
+  </table></div>
 </div>
 <% } %>
-<div class="grid grid-3" style="align-items:start">
-  <% table('By animal', byAnimal, 'Animal') %>
-  <% table('By staff member', byUser, 'Staff') %>
-  <% table('By activity type', byType, 'Activity') %>
+
+<% report.animals.forEach(a => { %>
+<div class="card" id="animal-<%= a.id %>">
+  <div class="card-head">
+    <div><h2><a href="/animals/<%= a.id %>"><%= a.name %></a> <span class="muted small" style="font-family:inherit;font-weight:400"><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></span></h2>
+      <div class="small muted"><%= h.fmtMinutes(a.minutes) %> over <%= a.entries %> entr<%= a.entries === 1 ? 'y' : 'ies' %> on <%= a.days.length %> day<%= a.days.length === 1 ? '' : 's' %> ·
+        <% a.byType.forEach((b, i) => { %><%= i ? ', ' : '' %><%= b.type %> <%= h.fmtMinutes(b.minutes) %><% }) %></div></div>
+    <% if (!report.animal) { %><a class="btn btn-secondary btn-sm" href="/admin/reports.pdf?<%= qs({ animal: a.id }) %>">PDF for <%= a.name %></a><% } %>
+  </div>
+  <% a.days.forEach(d => { %>
+    <div class="day-head"><strong><%= dayLabel(d.date) %></strong><span class="muted small"><%= h.fmtMinutes(d.minutes) %> · <%= d.entries.length %> entr<%= d.entries.length === 1 ? 'y' : 'ies' %></span></div>
+    <div class="table-wrap"><table class="compact">
+      <thead><tr><th style="width:9%">Time</th><th style="width:20%">Activity</th><th class="num" style="width:10%">Duration</th><th style="width:17%">Staff</th><th>Notes</th></tr></thead>
+      <tbody>
+      <% d.entries.forEach(e => { %>
+        <tr><td class="small"><%= timeLabel(e.performed_at) %></td><td><%= e.activity_type %></td><td class="num"><%= h.fmtMinutes(e.duration_minutes) %></td><td><%= e.user_name %></td><td class="small muted"><%= e.notes || '' %></td></tr>
+      <% }) %>
+      </tbody>
+    </table></div>
+  <% }) %>
 </div>
+<% }) %>
 <%- include('../partials/foot') %>

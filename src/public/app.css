@@ -155,3 +155,8 @@ label.check input { accent-color: var(--green); width: 16px; height: 16px; margi
 .mode input { display: none; }
 .mode input:checked + span { color: #fff; }
 .mode label:has(input:checked) { background: var(--green); color: #fff; }
+
+/* Reports */
+.day-head { display: flex; justify-content: space-between; align-items: baseline; background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: .4rem .7rem; margin: .9rem 0 .25rem; }
+table.compact th, table.compact td { padding: .4rem .5rem; }
+.card-head h2 a { text-decoration: none; }

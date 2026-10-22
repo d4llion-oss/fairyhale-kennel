@@ -150,20 +150,26 @@ router.get('/audit/export.csv', async (req, res, next) => {
 });
 
 // ---- Reports -----------------------------------------------------
+const { parseRange, buildReport } = require('../lib/reports');
+const { writeReportPdf } = require('../lib/pdf');
+
 router.get('/reports', async (req, res, next) => {
   try {
-    const days = [7, 30, 90].includes(parseInt(req.query.days, 10)) ? parseInt(req.query.days, 10) : 30;
-    const [byAnimal, byUser, byType] = await Promise.all([
-      db.query(`SELECT a.id, a.name, a.animal_type, SUM(e.duration_minutes)::int AS minutes, COUNT(*)::int AS entries
-                FROM activity_entries e JOIN animals a ON a.id=e.animal_id
-                WHERE e.performed_at >= now() - ($1 || ' days')::interval GROUP BY a.id ORDER BY minutes DESC`, [days]),
-      db.query(`SELECT u.display_name, SUM(e.duration_minutes)::int AS minutes, COUNT(*)::int AS entries
-                FROM activity_entries e JOIN users u ON u.id=e.user_id
-                WHERE e.performed_at >= now() - ($1 || ' days')::interval GROUP BY u.id ORDER BY minutes DESC`, [days]),
-      db.query(`SELECT activity_type, SUM(duration_minutes)::int AS minutes, COUNT(*)::int AS entries
-                FROM activity_entries WHERE performed_at >= now() - ($1 || ' days')::interval GROUP BY activity_type ORDER BY minutes DESC`, [days]),
-    ]);
-    res.render('admin/reports', { title: 'Reports', days, byAnimal: byAnimal.rows, byUser: byUser.rows, byType: byType.rows });
+    const range = parseRange(req.query);
+    const report = await buildReport(range);
+    res.render('admin/reports', { title: 'Reports', report, range });
+  } catch (e) { next(e); }
+});
+
+router.get('/reports.pdf', async (req, res, next) => {
+  try {
+    const range = parseRange(req.query);
+    const report = await buildReport(range);
+    const scope = report.animal ? report.animal.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() : 'all-animals';
+    await audit(req, { action: 'export', entityType: 'report', entityId: range.animalId, summary: `Exported PDF activity report (${scope}, ${range.from} to ${range.to}, ${report.totals.entries} entries)` });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="fairyhale-activity-${scope}-${range.from}-to-${range.to}.pdf"`);
+    writeReportPdf(report, res, { generatedBy: req.session.user.displayName });
   } catch (e) { next(e); }
 });
 

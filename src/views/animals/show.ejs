@@ -6,6 +6,7 @@
     <a class="btn btn-secondary" href="/animals/<%= animal.id %>/edit">Edit profile</a>
     <% if (animal.is_active) { %><a class="btn" href="/activities/new?animal=<%= animal.id %>">+ Log activity</a><% } %>
     <% if (user.role === 'admin') { %>
+      <a class="btn btn-secondary" href="/admin/reports?animal=<%= animal.id %>">Report</a>
       <form method="post" action="/animals/<%= animal.id %>/archive" class="inline" data-confirm="<%= animal.is_active ? 'Archive' : 'Restore' %> <%= animal.name %>?">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="active" value="<%= animal.is_active ? '0' : '1' %>">
         <button class="btn <%= animal.is_active ? 'btn-danger' : 'btn-secondary' %>"><%= animal.is_active ? 'Archive' : 'Restore' %></button>
