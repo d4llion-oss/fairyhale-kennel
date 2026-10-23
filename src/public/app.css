@@ -193,3 +193,7 @@ table.compact th, table.compact td { padding: .4rem .5rem; }
 
 .avatar-link { display: block; flex: none; border-radius: 8px; transition: transform .12s ease, box-shadow .12s ease; }
 .avatar-link:hover, .avatar-link:focus-visible { transform: translateY(-1px); box-shadow: 0 0 0 2px var(--green); outline: none; }
+
+/* Camera button only makes sense on touch devices with a camera */
+.mobile-only { display: none; }
+@media (hover: none) and (pointer: coarse) { .mobile-only { display: inline-block; } }

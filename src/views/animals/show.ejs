@@ -21,9 +21,13 @@
     <% if (photos.length < maxPhotos) { %>
     <form method="post" action="/animals/<%= animal.id %>/photos" enctype="multipart/form-data" class="inline upload-form">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <label class="btn btn-secondary btn-sm" style="margin:0">
-        <input type="file" name="photos" accept="image/*" multiple capture="environment" data-autosubmit hidden>
+      <label class="btn btn-secondary btn-sm" style="margin:0" title="Choose from your photos or files">
+        <input type="file" name="photos" accept="image/*" multiple data-autosubmit hidden>
         + Add photo<%= maxPhotos - photos.length > 1 ? 's' : '' %>
+      </label>
+      <label class="btn btn-secondary btn-sm mobile-only" style="margin:0 0 0 .4rem" title="Take a photo with the camera">
+        <input type="file" name="photos" accept="image/*" capture="environment" data-autosubmit hidden>
+        📷 Take photo
       </label>
       <noscript><button class="btn btn-sm">Upload</button></noscript>
     </form>
