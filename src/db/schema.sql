@@ -254,3 +254,26 @@ CREATE TABLE IF NOT EXISTS medication_doses (
   notes          TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_medication_doses_med ON medication_doses (medication_id, given_at DESC);
+
+-- ---------------------------------------------------------------
+-- Potty groups: which animals can be let out / pottied together
+-- ---------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS potty_groups (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        TEXT NOT NULL,
+  color       SMALLINT NOT NULL DEFAULT 0,     -- palette index for the badge
+  notes       TEXT,
+  created_by  UUID REFERENCES users(id),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_potty_groups_name ON potty_groups (lower(name));
+
+CREATE TABLE IF NOT EXISTS potty_group_members (
+  group_id    UUID NOT NULL REFERENCES potty_groups(id) ON DELETE CASCADE,
+  animal_id   UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  added_by    UUID REFERENCES users(id),
+  added_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (group_id, animal_id)
+);
+CREATE INDEX IF NOT EXISTS idx_potty_group_members_animal ON potty_group_members (animal_id);

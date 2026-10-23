@@ -1,0 +1,61 @@
+<%- include('../partials/head') %>
+<div class="page-head">
+  <div><h1>Potty groups</h1><p class="muted">Animals in the same group can be let out and pottied together. An animal may belong to more than one group.</p></div>
+</div>
+
+<div class="grid grid-2" style="align-items:start">
+  <div>
+    <% if (!groups.length) { %><div class="card"><p class="muted" style="margin:0">No groups yet — create the first one on the right.</p></div><% } %>
+    <% groups.forEach(g => { %>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-head">
+        <div><span class="pg-badge pg-<%= g.color %>" style="font-size:1rem"><%= g.name %></span> <span class="muted small"><%= g.members.length %> animal<%= g.members.length === 1 ? '' : 's' %></span>
+          <% if (g.notes) { %><div class="small muted" style="margin-top:.3rem"><%= g.notes %></div><% } %></div>
+        <details class="thumb-menu" style="position:static"><summary class="btn btn-secondary btn-sm" style="list-style:none">Edit ▾</summary>
+          <div class="dropdown-panel" style="right:0;left:auto;min-width:280px">
+            <form method="post" action="/potty-groups/<%= g.id %>" class="stack" style="gap:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="text" name="name" value="<%= g.name %>" maxlength="60" required>
+              <input type="text" name="notes" value="<%= g.notes || '' %>" placeholder="Notes (e.g. no toys, short leash)" maxlength="200">
+              <div class="swatches"><% for (let c = 0; c < 8; c++) { %><label class="swatch pg-<%= c %>" title="Colour <%= c + 1 %>"><input type="radio" name="color" value="<%= c %>" <%= g.color === c ? 'checked' : '' %>></label><% } %></div>
+              <button class="btn btn-sm">Save</button></form>
+            <form method="post" action="/potty-groups/<%= g.id %>/delete" style="margin-top:.5rem" data-confirm="Delete group &quot;<%= g.name %>&quot;? Animals are not affected."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm" style="width:100%">Delete group</button></form>
+          </div></details>
+      </div>
+      <form method="post" action="/potty-groups/<%= g.id %>/members">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="picker" style="max-height:none">
+          <% animals.forEach(a => { const inG = g.members.some(m => m.id === a.id); %>
+            <label class="check"><input type="checkbox" name="animal_ids" value="<%= a.id %>" <%= inG ? 'checked' : '' %>>
+              <% if (a.photo_id) { %><span class="avatar-box avatar-sm"><img src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt=""></span><% } else { %><span class="avatar-placeholder avatar-sm"></span><% } %>
+              <span><%= a.name %> <span class="muted small"><%= a.animal_type %></span></span></label>
+          <% }) %>
+        </div>
+        <div class="actions" style="margin-top:.5rem"><button class="btn btn-sm">Save members</button></div>
+      </form>
+    </div>
+    <% }) %>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>New group</h2>
+      <form method="post" action="/potty-groups" class="stack">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div><label for="gname">Name</label><input id="gname" type="text" name="name" placeholder="e.g. Big dogs AM, Puppies, Solo only" maxlength="60" required></div>
+        <div><label for="gnotes">Notes <span class="opt">(optional)</span></label><input id="gnotes" type="text" name="notes" placeholder="Anything staff should know" maxlength="200"></div>
+        <div><label>Animals</label>
+          <div class="picker">
+            <% animals.forEach(a => { %><label class="check"><input type="checkbox" name="animal_ids" value="<%= a.id %>"> <%= a.name %> <span class="muted small"><%= a.animal_type %></span></label><% }) %>
+          </div></div>
+        <button class="btn">Create group</button>
+      </form>
+    </div>
+    <% if (ungrouped.length) { %>
+    <div class="card" style="margin-top:1rem">
+      <h2>Not in any group <span class="muted small" style="font-family:inherit;font-weight:400">(<%= ungrouped.length %>)</span></h2>
+      <ul class="list"><% ungrouped.forEach(a => { %><li><a href="/animals/<%= a.id %>#potty-groups"><%= a.name %></a><span class="muted small"><%= a.animal_type %></span></li><% }) %></ul>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/foot') %>

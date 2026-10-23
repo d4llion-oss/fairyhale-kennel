@@ -16,6 +16,7 @@
     <a href="/animals" class="<%= path.startsWith('/animals') ? 'active' : '' %>">Animals</a>
     <a href="/activities" class="<%= path.startsWith('/activities') ? 'active' : '' %>">Activity</a>
     <a href="/tasks" class="<%= path.startsWith('/tasks') ? 'active' : '' %>">Tasks</a>
+    <a href="/potty-groups" class="<%= path.startsWith('/potty-groups') ? 'active' : '' %>">Groups</a>
     <% if (user.role === 'admin') { %>
       <a href="/admin/reports" class="<%= path.startsWith('/admin/reports') ? 'active' : '' %>">Reports</a>
       <a href="/admin/users" class="<%= path.startsWith('/admin/users') ? 'active' : '' %>">Users</a>

@@ -70,6 +70,7 @@ app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/dashboard'));
 app.use('/conditions', require('./routes/conditions').lookup);
 app.use('/medications', require('./routes/medications').lookup);
+app.use('/potty-groups', require('./routes/potty-groups').groups);
 app.use('/animals', require('./routes/animals'));
 app.use('/activities', require('./routes/activities'));
 app.use('/tasks', require('./routes/tasks'));

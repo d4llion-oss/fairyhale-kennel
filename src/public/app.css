@@ -234,3 +234,26 @@ table.meds td { vertical-align: middle; }
 .dose-boxes form.dose { display: inline-flex; }
 label.check.given { color: var(--green-ink); }
 label.check.given input { accent-color: var(--green); }
+
+/* Potty groups */
+.pg-badge { display: inline-block; padding: .2rem .7rem; border-radius: 999px; font-weight: 700; font-size: .85rem; }
+.pg-0 { background: #1f3a2e; color: #7fd0a6; }
+.pg-1 { background: #222b3f; color: #9db3e6; }
+.pg-2 { background: #3a2d16; color: #e2a44a; }
+.pg-3 { background: #3d2222; color: #e07a7a; }
+.pg-4 { background: #2e2140; color: #c3a3e8; }
+.pg-5 { background: #173a3a; color: #7fd0cc; }
+.pg-6 { background: #3a2a1a; color: #e0a37a; }
+.pg-7 { background: #2a3430; color: #c9d3cd; }
+.pg-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .75rem; margin-bottom: .9rem; }
+.pg-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: .7rem .8rem; }
+.pg-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.pg-members { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; }
+.pg-form { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.pg-form select, .pg-form input[type=text] { width: auto; min-width: 220px; flex: 1; }
+.avatar-sm, .avatar-placeholder.avatar-sm { width: 32px; height: 32px; border-radius: 6px; }
+.avatar-sm img { max-width: 32px; max-height: 32px; }
+.swatches { display: flex; gap: .35rem; }
+.swatch { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; margin: 0; padding: 0; display: block; }
+.swatch input { display: none; }
+.swatch:has(input:checked) { border-color: #fff; }

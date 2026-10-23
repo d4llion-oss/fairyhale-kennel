@@ -41,7 +41,8 @@
       <li>
         <div class="with-avatar"><a class="avatar-link" href="/animals/<%= a.id %>" title="Open <%= a.name %>'s profile"><% if (a.photo_id) { %><span class="avatar-box"><img src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt="<%= a.name %>" width="75" height="75"></span><% } else { %><span class="avatar-placeholder"></span><% } %></a>
           <div><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <span class="muted small"><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></span>
-          <% if (a.medications) { %><div class="small muted">💊 <%= a.medications %></div><% } %></div></div>
+          <% if (a.medications) { %><div class="small muted">💊 <%= a.medications %></div><% } %>
+          <% if (a.groups && a.groups.length) { %><div style="margin-top:.2rem"><% a.groups.forEach(g => { %><span class="pg-badge pg-<%= g.color %>" style="font-size:.7rem;padding:.1rem .5rem;margin-right:.25rem"><%= g.name %></span><% }) %></div><% } %></div></div>
         <div style="text-align:right;white-space:nowrap">
           <div class="small"><% if (a.minutes_today) { %><%= h.fmtMinutes(a.minutes_today) %> today<% } else { %><span class="muted">nothing today</span><% } %></div>
           <a class="btn btn-secondary btn-sm" href="/activities/new?animal=<%= a.id %>">Log</a>

@@ -119,6 +119,46 @@
   </div>
 </div>
 
+<div class="card" id="potty-groups" style="margin-top:1rem">
+  <div class="card-head"><h2>Potty groups</h2><a class="btn btn-secondary btn-sm" href="/potty-groups">Manage all groups</a></div>
+  <% if (!pottyGroups.length) { %>
+    <p class="muted small" style="margin:.2rem 0 .8rem"><%= animal.name %> isn't in a potty group yet. Animals in the same group can be let out and pottied together.</p>
+  <% } else { %>
+  <div class="pg-cards">
+    <% pottyGroups.forEach(g => { %>
+      <div class="pg-card">
+        <div class="pg-head">
+          <span class="pg-badge pg-<%= g.color %>"><%= g.name %></span>
+          <form method="post" action="/animals/<%= animal.id %>/potty-groups/<%= g.id %>/remove" class="inline" data-confirm="Remove <%= animal.name %> from &quot;<%= g.name %>&quot;?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link-btn" aria-label="Remove from <%= g.name %>">×</button></form>
+        </div>
+        <% if (g.notes) { %><div class="small muted" style="margin:.2rem 0 .4rem"><%= g.notes %></div><% } %>
+        <% if (!g.others.length) { %><div class="small muted">No other animals in this group yet.</div><% } else { %>
+        <div class="small muted" style="margin-bottom:.3rem">Can go out with:</div>
+        <ul class="pg-members">
+          <% g.others.forEach(m => { %>
+            <li><a href="/animals/<%= m.id %>" class="with-avatar" style="gap:.4rem;text-decoration:none"><% if (m.photo_id) { %><span class="avatar-box avatar-sm"><img src="/animals/<%= m.id %>/photos/<%= m.photo_id %>?size=thumb" alt=""></span><% } else { %><span class="avatar-placeholder avatar-sm"></span><% } %><span><strong><%= m.name %></strong> <span class="muted small"><%= m.animal_type %><%= m.breed ? ' · ' + m.breed : '' %></span></span></a></li>
+          <% }) %>
+        </ul>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+  <% } %>
+  <% const joinable = allPottyGroups.filter(g => !pottyGroups.some(p => p.id === g.id)); %>
+  <form method="post" action="/animals/<%= animal.id %>/potty-groups" class="pg-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (joinable.length) { %>
+    <select name="group_id" aria-label="Existing group">
+      <option value="">Add to an existing group…</option>
+      <% joinable.forEach(g => { %><option value="<%= g.id %>"><%= g.name %> (<%= g.members.length %>)</option><% }) %>
+    </select>
+    <span class="muted small">or</span>
+    <% } %>
+    <input type="text" name="name" placeholder="New group name, e.g. Big dogs AM" maxlength="60" aria-label="New group name">
+    <button class="btn btn-sm">Add</button>
+  </form>
+</div>
+
 <div class="card" id="medications" style="margin-top:1rem">
   <div class="card-head"><h2>Medications</h2><span class="muted small"><%= medications.filter(m => m.is_active).length %> active · today in <%= 'America/Chicago' %></span></div>
   <% const activeMeds = medications.filter(m => m.is_active), stoppedMeds = medications.filter(m => !m.is_active); %>
