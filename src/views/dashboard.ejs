@@ -69,6 +69,51 @@
   </div>
 </div>
 
+<% const fmtT = (ts) => new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' });
+   const ago = (ts) => { const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000); return m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+   const withMembers = pottyGroups.filter(g => g.members.length);
+   const nextIdx = withMembers.findIndex(g => !g.last_outing || (Date.now() - new Date(g.last_outing.at).getTime()) > 4 * 3600000); %>
+<div class="card" id="potty-rotation" style="margin-top:1rem">
+  <div class="card-head">
+    <h2>Potty rotation</h2>
+    <a class="btn btn-secondary btn-sm" href="/potty-groups">Manage groups</a>
+  </div>
+  <% if (!withMembers.length) { %>
+    <p class="muted" style="margin:0">No potty groups with animals yet. <a href="/potty-groups">Set up groups</a> to see the let-out order here.</p>
+  <% } else { %>
+  <p class="muted small" style="margin:0 0 .6rem">Let groups out in this order. Tap <strong>Let out</strong> when a group goes out; the time and who did it are recorded.</p>
+  <ol class="rotation">
+    <% withMembers.forEach((g, i) => { const stale = !g.last_outing || (Date.now() - new Date(g.last_outing.at).getTime()) > 4 * 3600000; %>
+      <li class="rotation-row <%= i === nextIdx ? 'next' : '' %>">
+        <div class="rotation-num"><%= i + 1 %></div>
+        <div class="rotation-main">
+          <div class="rotation-title"><span class="pg-badge pg-<%= g.color %>"><%= g.name %></span>
+            <% if (i === nextIdx) { %><span class="badge badge-due_soon">Up next</span><% } %>
+            <% if (g.notes) { %><span class="muted small"><%= g.notes %></span><% } %></div>
+          <div class="rotation-members">
+            <% g.members.forEach(m => { %>
+              <a href="/animals/<%= m.id %>" class="rotation-member" title="<%= m.animal_type %><%= m.breed ? ' · ' + m.breed : '' %>">
+                <% if (m.photo_id) { %><span class="avatar-box avatar-sm"><img src="/animals/<%= m.id %>/photos/<%= m.photo_id %>?size=thumb" alt=""></span><% } else { %><span class="avatar-placeholder avatar-sm"></span><% } %>
+                <span><%= m.name %></span></a>
+            <% }) %>
+          </div>
+          <div class="small <%= stale ? 'muted' : '' %>" style="margin-top:.25rem;<%= stale ? '' : 'color:var(--green-ink)' %>">
+            <% if (g.last_outing) { %>Last out <%= fmtT(g.last_outing.at) %> (<%= ago(g.last_outing.at) %>)<%= g.last_outing.by ? ' by ' + g.last_outing.by : '' %> · <%= g.outings_today %>× today<% } else { %>Not let out yet today<% } %>
+          </div>
+        </div>
+        <div class="rotation-actions">
+          <form method="post" action="/potty-groups/<%= g.id %>/let-out"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm">Let out</button></form>
+          <div class="reorder">
+            <form method="post" action="/potty-groups/<%= g.id %>/move" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="dir" value="up"><input type="hidden" name="return_to" value="dashboard"><button class="link-btn" <%= i === 0 ? 'disabled' : '' %> aria-label="Move up" title="Move up">▲</button></form>
+            <form method="post" action="/potty-groups/<%= g.id %>/move" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="dir" value="down"><input type="hidden" name="return_to" value="dashboard"><button class="link-btn" <%= i === withMembers.length - 1 ? 'disabled' : '' %> aria-label="Move down" title="Move down">▼</button></form>
+          </div>
+        </div>
+      </li>
+    <% }) %>
+  </ol>
+  <% } %>
+</div>
+
 <div class="card" style="margin-top:1rem">
   <h2>Recent activity</h2>
   <% if (!recent.length) { %><p class="muted">No activity logged yet.</p><% } else { %>

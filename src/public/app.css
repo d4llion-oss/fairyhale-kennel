@@ -257,3 +257,18 @@ label.check.given input { accent-color: var(--green); }
 .swatch { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; margin: 0; padding: 0; display: block; }
 .swatch input { display: none; }
 .swatch:has(input:checked) { border-color: #fff; }
+
+/* Potty rotation (dashboard) */
+.rotation { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.rotation-row { display: grid; grid-template-columns: 36px 1fr auto; gap: .75rem; align-items: start; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: .6rem .75rem; }
+.rotation-row.next { border-color: var(--amber); box-shadow: inset 3px 0 0 var(--amber); }
+.rotation-num { width: 32px; height: 32px; border-radius: 50%; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-weight: 700; color: var(--green-ink); }
+.rotation-title { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .35rem; }
+.rotation-members { display: flex; flex-wrap: wrap; gap: .35rem .75rem; }
+.rotation-member { display: inline-flex; align-items: center; gap: .35rem; text-decoration: none; color: var(--ink); font-weight: 600; font-size: .92rem; }
+.rotation-member:hover span:last-child { color: var(--green-ink); }
+.rotation-actions { display: flex; flex-direction: column; align-items: flex-end; gap: .35rem; }
+.reorder { display: flex; gap: .1rem; align-items: center; }
+.reorder .link-btn { font-size: .8rem; }
+.reorder .link-btn:disabled { opacity: .25; cursor: default; }
+@media (max-width: 640px) { .rotation-row { grid-template-columns: 28px 1fr; } .rotation-actions { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; } }

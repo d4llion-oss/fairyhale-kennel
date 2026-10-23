@@ -277,3 +277,15 @@ CREATE TABLE IF NOT EXISTS potty_group_members (
   PRIMARY KEY (group_id, animal_id)
 );
 CREATE INDEX IF NOT EXISTS idx_potty_group_members_animal ON potty_group_members (animal_id);
+
+-- Let-out order for potty groups, and a log of each outing
+ALTER TABLE potty_groups ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE IF NOT EXISTS potty_outings (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  group_id    UUID NOT NULL REFERENCES potty_groups(id) ON DELETE CASCADE,
+  let_out_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  let_out_by  UUID REFERENCES users(id),
+  notes       TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_potty_outings_group ON potty_outings (group_id, let_out_at DESC);

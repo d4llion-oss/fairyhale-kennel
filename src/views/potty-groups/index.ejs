@@ -1,16 +1,23 @@
 <%- include('../partials/head') %>
 <div class="page-head">
-  <div><h1>Potty groups</h1><p class="muted">Animals in the same group can be let out and pottied together. An animal may belong to more than one group.</p></div>
+  <div><h1>Potty groups</h1><p class="muted">Animals in the same group can be let out and pottied together. An animal may belong to more than one group. The number is the let-out order shown on the dashboard — use ▲▼ to change it.</p></div>
 </div>
 
 <div class="grid grid-2" style="align-items:start">
   <div>
     <% if (!groups.length) { %><div class="card"><p class="muted" style="margin:0">No groups yet — create the first one on the right.</p></div><% } %>
-    <% groups.forEach(g => { %>
+    <% groups.forEach((g, i) => { %>
     <div class="card" style="margin-bottom:1rem">
       <div class="card-head">
-        <div><span class="pg-badge pg-<%= g.color %>" style="font-size:1rem"><%= g.name %></span> <span class="muted small"><%= g.members.length %> animal<%= g.members.length === 1 ? '' : 's' %></span>
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <div class="reorder" style="flex-direction:column">
+            <form method="post" action="/potty-groups/<%= g.id %>/move" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="dir" value="up"><button class="link-btn" <%= i === 0 ? 'disabled' : '' %> aria-label="Move up" title="Let-out order: move up">▲</button></form>
+            <div class="rotation-num" style="width:26px;height:26px;font-size:.85rem"><%= i + 1 %></div>
+            <form method="post" action="/potty-groups/<%= g.id %>/move" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="dir" value="down"><button class="link-btn" <%= i === groups.length - 1 ? 'disabled' : '' %> aria-label="Move down" title="Let-out order: move down">▼</button></form>
+          </div>
+          <div><span class="pg-badge pg-<%= g.color %>" style="font-size:1rem"><%= g.name %></span> <span class="muted small"><%= g.members.length %> animal<%= g.members.length === 1 ? '' : 's' %><%= g.last_outing ? ' · last out ' + h.fmtDateTime(g.last_outing.at) : '' %></span>
           <% if (g.notes) { %><div class="small muted" style="margin-top:.3rem"><%= g.notes %></div><% } %></div>
+        </div>
         <details class="thumb-menu" style="position:static"><summary class="btn btn-secondary btn-sm" style="list-style:none">Edit ▾</summary>
           <div class="dropdown-panel" style="right:0;left:auto;min-width:280px">
             <form method="post" action="/potty-groups/<%= g.id %>" class="stack" style="gap:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>">

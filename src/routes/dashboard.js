@@ -10,7 +10,7 @@ router.get('/', requireLogin, async (req, res, next) => {
   try {
     // Optional animal-type filter: ?type=Dog&type=Cat (multi-select checkboxes on the page)
     let selectedTypes = [].concat(req.query.type || []).map((t) => String(t).trim()).filter(Boolean);
-    const [animals, tasks, recent, today, typeRows] = await Promise.all([
+    const [animals, tasks, recent, today, typeRows, pottyGroups] = await Promise.all([
       db.query(`SELECT a.*, COALESCE(SUM(e.duration_minutes) FILTER (WHERE e.performed_at >= now() - interval '24 hours'),0)::int AS minutes_today,
                        MAX(e.performed_at) AS last_activity_at,
                        (SELECT p.id FROM animal_photos p WHERE p.animal_id=a.id ORDER BY p.position LIMIT 1) AS photo_id,
@@ -26,6 +26,7 @@ router.get('/', requireLogin, async (req, res, next) => {
       db.query(`SELECT COALESCE(SUM(duration_minutes),0)::int AS minutes, COUNT(*)::int AS entries
                 FROM activity_entries WHERE performed_at >= date_trunc('day', now())`),
       db.query(`SELECT animal_type, COUNT(*)::int AS n FROM animals WHERE is_active GROUP BY animal_type ORDER BY animal_type`),
+      require('./potty-groups').allGroups(),
     ]);
     const availableTypes = typeRows.rows;
     selectedTypes = selectedTypes.filter((t) => availableTypes.some((r) => r.animal_type === t));
@@ -40,6 +41,7 @@ router.get('/', requireLogin, async (req, res, next) => {
       taskCount: tasks.rows.length,
       recent: recent.rows,
       today: today.rows[0],
+      pottyGroups,
     });
   } catch (e) { next(e); }
 });
