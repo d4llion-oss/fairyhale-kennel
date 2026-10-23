@@ -90,3 +90,78 @@
     }, { passive: true });
   });
 })();
+
+// Medical conditions: autocomplete + summary dialog
+(function () {
+  'use strict';
+  var form = document.querySelector('[data-condition-form]');
+  var dialog = document.getElementById('cond-dialog');
+
+  if (form) {
+    var input = form.querySelector('[data-condition-input]');
+    var wiki = form.querySelector('input[name=wiki]');
+    var list = form.querySelector('.ac-list');
+    var items = [], active = -1, timer = null, lastQ = '';
+
+    function close() { list.hidden = true; list.innerHTML = ''; items = []; active = -1; input.setAttribute('aria-expanded', 'false'); }
+    function render() {
+      list.innerHTML = '';
+      items.forEach(function (it, i) {
+        var li = document.createElement('li');
+        li.setAttribute('role', 'option'); li.setAttribute('aria-selected', i === active ? 'true' : 'false');
+        var name = document.createElement('span'); name.textContent = it.name;
+        var src = document.createElement('span'); src.className = 'src'; src.textContent = it.source === 'wikipedia' ? 'Wikipedia' : '';
+        li.appendChild(name); li.appendChild(src);
+        li.addEventListener('mousedown', function (ev) { ev.preventDefault(); choose(i); });
+        list.appendChild(li);
+      });
+      list.hidden = !items.length; input.setAttribute('aria-expanded', items.length ? 'true' : 'false');
+    }
+    function choose(i) { var it = items[i]; if (!it) return; input.value = it.name; wiki.value = it.wiki || ''; close(); form.querySelector('input[name=notes]').focus(); }
+    function fetchSuggestions() {
+      var q = input.value.trim();
+      if (q === lastQ) return; lastQ = q; wiki.value = '';
+      if (q.length < 2) return close();
+      fetch('/conditions/suggest?q=' + encodeURIComponent(q), { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (data) { if (input.value.trim() !== q) return; items = data; active = -1; render(); })
+        .catch(close);
+    }
+    input.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(fetchSuggestions, 180); });
+    input.addEventListener('keydown', function (ev) {
+      if (list.hidden) return;
+      if (ev.key === 'ArrowDown') { ev.preventDefault(); active = (active + 1) % items.length; render(); }
+      else if (ev.key === 'ArrowUp') { ev.preventDefault(); active = (active - 1 + items.length) % items.length; render(); }
+      else if (ev.key === 'Enter' && active >= 0) { ev.preventDefault(); choose(active); }
+      else if (ev.key === 'Tab' && active >= 0) { choose(active); }
+      else if (ev.key === 'Escape') { close(); }
+    });
+    input.addEventListener('blur', function () { setTimeout(close, 120); });
+  }
+
+  if (dialog && typeof dialog.showModal === 'function') {
+    var title = document.getElementById('cond-title'), body = document.getElementById('cond-body'), foot = document.getElementById('cond-foot');
+    document.querySelectorAll('.cond-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        title.textContent = chip.dataset.condition;
+        body.innerHTML = '<p class="muted">Looking up…</p>'; foot.textContent = '';
+        dialog.showModal();
+        var url = '/conditions/summary?name=' + encodeURIComponent(chip.dataset.condition) + (chip.dataset.wiki ? '&wiki=' + encodeURIComponent(chip.dataset.wiki) : '');
+        fetch(url, { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (d) {
+          body.innerHTML = '';
+          var p = document.createElement('p');
+          if (d.extract) { p.textContent = d.extract; }
+          else if (d.kind === 'disambiguation') { p.textContent = 'That name matches several topics. Open the link below to pick the right one, or re-add the condition with a more specific name.'; }
+          else if (d.kind === 'missing') { p.textContent = 'No reference article was found for this condition name.'; }
+          else { p.textContent = 'The reference service could not be reached right now. Try again in a moment.'; }
+          body.appendChild(p);
+          if (d.title && d.title !== chip.dataset.condition) { var s = document.createElement('p'); s.className = 'muted small'; s.textContent = 'Article: ' + d.title; body.appendChild(s); }
+          foot.innerHTML = '';
+          if (d.url) { var a = document.createElement('a'); a.href = d.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Read more on Wikipedia ↗'; foot.appendChild(a); foot.appendChild(document.createTextNode(' · ')); }
+          foot.appendChild(document.createTextNode('General reference only — not veterinary advice.'));
+        }).catch(function () { body.innerHTML = '<p>The reference service could not be reached right now.</p>'; });
+      });
+    });
+    dialog.addEventListener('click', function (ev) { if (ev.target === dialog) dialog.close(); });
+  }
+})();

@@ -197,3 +197,28 @@ BEGIN
   END IF;
 END $$;
 ALTER TABLE animal_photos ADD COLUMN IF NOT EXISTS thumb_fit TEXT NOT NULL DEFAULT 'cover';
+
+-- ---------------------------------------------------------------
+-- Medical conditions per animal, plus a cache of reference summaries
+-- (fetched from Wikipedia on demand; reference only, not veterinary advice)
+-- ---------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS animal_conditions (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  animal_id   UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,              -- as entered / chosen
+  wiki_title  TEXT,                       -- article used for the summary, when known
+  notes       TEXT,
+  created_by  UUID REFERENCES users(id),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (animal_id, name)
+);
+CREATE INDEX IF NOT EXISTS idx_animal_conditions_animal ON animal_conditions (animal_id, created_at);
+
+CREATE TABLE IF NOT EXISTS condition_summaries (
+  title       TEXT PRIMARY KEY,           -- normalized Wikipedia title
+  display     TEXT,
+  extract     TEXT,
+  url         TEXT,
+  kind        TEXT,                       -- 'standard', 'disambiguation', 'missing'
+  fetched_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);

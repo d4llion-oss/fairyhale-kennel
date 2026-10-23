@@ -73,20 +73,22 @@ async function loadAnimal(id) {
 }
 
 router.use('/:id/photos', require('./photos'));
+router.use('/:id/conditions', require('./conditions').perAnimal);
 
 router.get('/:id', async (req, res, next) => {
   try {
     const animal = await loadAnimal(req.params.id);
     if (!animal) return res.status(404).render('error', { title: 'Not found', status: 404, message: 'Animal not found.' });
-    const [entries, totals, photos] = await Promise.all([
+    const [entries, totals, photos, conds] = await Promise.all([
       db.query(`SELECT e.*, u.display_name AS user_name FROM activity_entries e JOIN users u ON u.id=e.user_id
                 WHERE e.animal_id=$1 ORDER BY e.performed_at DESC LIMIT 100`, [animal.id]),
       db.query(`SELECT activity_type, SUM(duration_minutes)::int AS minutes, COUNT(*)::int AS n
                 FROM activity_entries WHERE animal_id=$1 AND performed_at >= now() - interval '7 days'
                 GROUP BY activity_type ORDER BY minutes DESC`, [animal.id]),
       db.query('SELECT id, position, caption, width, height, bytes, created_at FROM animal_photos WHERE animal_id=$1 ORDER BY position', [animal.id]),
+      db.query('SELECT c.*, u.display_name AS added_by FROM animal_conditions c LEFT JOIN users u ON u.id=c.created_by WHERE c.animal_id=$1 ORDER BY c.name', [animal.id]),
     ]);
-    res.render('animals/show', { title: animal.name, animal, entries: entries.rows, totals: totals.rows, photos: photos.rows, maxPhotos: 5, activityTypes: ACTIVITY_TYPES });
+    res.render('animals/show', { title: animal.name, animal, entries: entries.rows, totals: totals.rows, photos: photos.rows, maxPhotos: 5, conditions: conds.rows, activityTypes: ACTIVITY_TYPES });
   } catch (e) { next(e); }
 });
 

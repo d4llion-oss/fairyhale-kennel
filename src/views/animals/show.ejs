@@ -80,6 +80,32 @@
       <dt>Medications</dt><dd><%= animal.medications || '—' %></dd>
       <dt>Notes</dt><dd><%= animal.notes || '—' %></dd>
     </dl>
+
+    <div class="conditions" id="conditions">
+      <h3>Medical conditions</h3>
+      <% if (!conditions.length) { %><p class="muted small" style="margin:.2rem 0 .6rem">None recorded.</p><% } else { %>
+      <ul class="cond-list">
+        <% conditions.forEach(c => { %>
+          <li>
+            <button type="button" class="cond-chip" data-condition="<%= c.name %>" data-wiki="<%= c.wiki_title || '' %>" title="Show a summary of <%= c.name %>"><%= c.name %></button>
+            <% if (c.notes) { %><span class="muted small"><%= c.notes %></span><% } %>
+            <form method="post" action="/animals/<%= animal.id %>/conditions/<%= c.id %>/delete" class="inline" data-confirm="Remove &quot;<%= c.name %>&quot; from <%= animal.name %>?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link-btn" aria-label="Remove <%= c.name %>">×</button></form>
+          </li>
+        <% }) %>
+      </ul>
+      <% } %>
+      <form method="post" action="/animals/<%= animal.id %>/conditions" class="cond-form" autocomplete="off" data-condition-form>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="wiki" value="">
+        <div class="autocomplete">
+          <input type="text" name="name" placeholder="Add a condition — start typing, e.g. hip dys…" maxlength="120" required aria-label="Condition name" aria-autocomplete="list" aria-expanded="false" data-condition-input>
+          <ul class="ac-list" role="listbox" hidden></ul>
+        </div>
+        <input type="text" name="notes" placeholder="Note (optional)" maxlength="140" aria-label="Note">
+        <button class="btn btn-sm">Add</button>
+      </form>
+      <p class="help">Click a condition for a reference summary. Summaries are general information, not veterinary advice.</p>
+    </div>
     <p class="small muted" style="margin:1rem 0 0">Added <%= h.fmtDateTime(animal.created_at) %> · updated <%= h.fmtDateTime(animal.updated_at) %></p>
   </div>
   <div class="card">
