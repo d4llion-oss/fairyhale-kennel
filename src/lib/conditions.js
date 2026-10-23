@@ -3,7 +3,7 @@
 // Suggestions: curated list (instant) then Wikipedia search. Summaries: Wikipedia
 // REST summary endpoint, cached in condition_summaries for 30 days.
 const db = require('../db');
-const LIST = require('./conditions-list');
+const LISTS = { conditions: require('./conditions-list'), medications: require('./medications-list') };
 
 const UA = 'FairyHaleKennel/1.0 (kennel management app; contact: admin)';
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
@@ -32,8 +32,9 @@ function remember(key, value) {
   return value;
 }
 
-/** Suggestions for an autocomplete query. */
-async function suggest(q) {
+/** Suggestions for an autocomplete query. `kind` picks the curated list. */
+async function suggest(q, kind = 'conditions') {
+  const LIST = LISTS[kind] || LISTS.conditions;
   const query = fold(q);
   if (query.length < 2) return [];
   const starts = [], contains = [];
@@ -46,13 +47,14 @@ async function suggest(q) {
   if (local.length >= 6 || query.length < 3) return local;
 
   // Fill remaining slots from Wikipedia, excluding things we already have.
-  const hit = searchCache.get(query);
+  const cacheKey = kind + ':' + query;
+  const hit = searchCache.get(cacheKey);
   let remote = hit && Date.now() - hit.at < 10 * 60 * 1000 ? hit.value : null;
   if (!remote) {
     try {
       const url = `${WIKI_API}?action=opensearch&namespace=0&limit=8&format=json&search=${encodeURIComponent(norm(q))}`;
       const { body } = await fetchJson(url);
-      remote = remember(query, Array.isArray(body) && Array.isArray(body[1]) ? body[1] : []);
+      remote = remember(cacheKey, Array.isArray(body) && Array.isArray(body[1]) ? body[1] : []);
     } catch { remote = []; }
   }
   const seen = new Set(local.map((c) => fold(c.wiki)).concat(local.map((c) => fold(c.name))));
@@ -61,7 +63,8 @@ async function suggest(q) {
 }
 
 /** Resolve the best Wikipedia title for a free-text condition name. */
-function resolveTitle(name) {
+function resolveTitle(name, kind = 'conditions') {
+  const LIST = LISTS[kind] || LISTS.conditions;
   const f = fold(name);
   const exact = LIST.find((c) => fold(c.name) === f);
   if (exact) return exact.wiki;
@@ -70,8 +73,8 @@ function resolveTitle(name) {
 }
 
 /** Summary for a condition: from cache, else Wikipedia; never throws. */
-async function summary(name, wikiTitle) {
-  const title = norm(wikiTitle || resolveTitle(name));
+async function summary(name, wikiTitle, kind = 'conditions') {
+  const title = norm(wikiTitle || resolveTitle(name, kind));
   const cached = (await db.query('SELECT * FROM condition_summaries WHERE title=$1', [title])).rows[0];
   if (cached && Date.now() - new Date(cached.fetched_at).getTime() < CACHE_DAYS * 86400000 && cached.kind !== 'error') return shape(cached);
 

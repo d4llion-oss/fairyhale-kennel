@@ -222,3 +222,35 @@ CREATE TABLE IF NOT EXISTS condition_summaries (
   kind        TEXT,                       -- 'standard', 'disambiguation', 'missing'
   fetched_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ---------------------------------------------------------------
+-- Medications per animal, with a dosing schedule and a log of doses given
+-- ---------------------------------------------------------------
+DO $$ BEGIN
+  CREATE TYPE med_frequency AS ENUM ('once_daily', 'twice_daily', 'three_times_daily', 'every_other_day', 'weekly', 'monthly', 'as_needed');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE TABLE IF NOT EXISTS animal_medications (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  animal_id   UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  wiki_title  TEXT,
+  dose        TEXT,                        -- e.g. "50 mg", "1 tablet", "0.5 mL"
+  frequency   med_frequency NOT NULL DEFAULT 'once_daily',
+  notes       TEXT,
+  is_active   BOOLEAN NOT NULL DEFAULT TRUE,
+  created_by  UUID REFERENCES users(id),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  ended_at    TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_animal_medications_animal ON animal_medications (animal_id, is_active, name);
+
+CREATE TABLE IF NOT EXISTS medication_doses (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  medication_id  UUID NOT NULL REFERENCES animal_medications(id) ON DELETE CASCADE,
+  animal_id      UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  given_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  given_by       UUID REFERENCES users(id),
+  notes          TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_medication_doses_med ON medication_doses (medication_id, given_at DESC);

@@ -224,3 +224,13 @@ table.compact th, table.compact td { padding: .4rem .5rem; }
 .modal-head h3 { margin: 0; }
 .modal-body { padding: 1rem 1.1rem; line-height: 1.55; max-height: 60vh; overflow: auto; }
 .modal-foot { padding: .6rem 1.1rem .9rem; border-top: 1px solid var(--line); }
+
+/* Medications */
+table.meds td { vertical-align: middle; }
+.med-form { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr auto; gap: .5rem; align-items: start; margin-top: .75rem; }
+@media (max-width: 900px) { .med-form { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .med-form { grid-template-columns: 1fr; } }
+.dose-boxes { display: flex; flex-wrap: wrap; gap: .25rem .9rem; align-items: center; }
+.dose-boxes form.dose { display: inline-flex; }
+label.check.given { color: var(--green-ink); }
+label.check.given input { accent-color: var(--green); }

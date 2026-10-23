@@ -1,0 +1,15 @@
+<%- include('../partials/head') %>
+<div class="page-head">
+  <div><h1><%= med.name %></h1><p class="muted"><a href="/animals/<%= animal.id %>"><%= animal.name %></a> · <%= med.dose || 'no dose recorded' %> · <%= med.freq.label %><%= med.is_active ? '' : ' · stopped ' + h.fmtDate(med.ended_at) %><%= med.notes ? ' · ' + med.notes : '' %></p></div>
+  <div class="actions"><a class="btn btn-secondary" href="/animals/<%= animal.id %>#medications">← Back to <%= animal.name %></a></div>
+</div>
+<div class="card">
+  <h2>Doses given <span class="muted small" style="font-family:inherit;font-weight:400">(<%= doses.length %>, times in <%= tz %>)</span></h2>
+  <% if (!doses.length) { %><p class="muted">No doses recorded yet.</p><% } else { %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Given</th><th>By</th><th>Notes</th></tr></thead>
+    <tbody><% doses.forEach(d => { %><tr><td><%= new Date(d.given_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: tz }) %></td><td><%= d.given_by_name || '—' %></td><td class="small muted"><%= d.notes || '' %></td></tr><% }) %></tbody>
+  </table></div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>
