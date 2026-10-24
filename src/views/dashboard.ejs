@@ -7,8 +7,8 @@
 
 <div class="stats">
   <div class="stat"><div class="n"><%= animals.length %></div><div class="l"><%= selectedTypes.length ? selectedTypes.join(' / ') + ' in care' : 'Animals in care' %></div></div>
-  <div class="stat"><div class="n"><%= h.fmtMinutes(today.minutes) %></div><div class="l">Logged today · <%= today.entries %> entries</div></div>
-  <div class="stat"><div class="n" style="color:<%= dueTasks.filter(t=>t.status==='overdue').length ? 'var(--red)' : 'var(--green-ink)' %>"><%= dueTasks.length %></div><div class="l">Tasks due · of <%= taskCount %></div></div>
+  <div class="stat"><div class="n"><%= h.fmtMinutes(today.minutes) %></div><div class="l">Logged today<span class="desk"> · <%= today.entries %> entries</span></div></div>
+  <div class="stat"><div class="n" style="color:<%= dueTasks.filter(t=>t.status==='overdue').length ? 'var(--red)' : 'var(--green-ink)' %>"><%= dueTasks.length %></div><div class="l">Tasks due<span class="desk"> · of <%= taskCount %></span></div></div>
 </div>
 
 <div class="grid grid-2">
@@ -117,11 +117,11 @@
 <div class="card" style="margin-top:1rem">
   <h2>Recent activity</h2>
   <% if (!recent.length) { %><p class="muted">No activity logged yet.</p><% } else { %>
-  <div class="table-wrap"><table>
-    <thead><tr><th>When</th><th>Animal</th><th>Activity</th><th class="num">Time</th><th>By</th><th>Notes</th></tr></thead>
+  <div class="table-wrap"><table class="stack">
+    <thead><tr><th>Entry</th><th>When</th><th>By</th><th>Notes</th></tr></thead>
     <tbody>
     <% recent.forEach(e => { %>
-      <tr><td class="small"><%= h.fmtDateTime(e.performed_at) %></td><td><a href="/animals/<%= e.animal_id %>"><%= e.animal_name %></a></td><td><%= e.activity_type %></td><td class="num"><%= h.fmtMinutes(e.duration_minutes) %></td><td><%= e.user_name %></td><td class="small muted"><%= e.notes || '' %></td></tr>
+      <tr><td class="primary"><a href="/animals/<%= e.animal_id %>"><%= e.animal_name %></a> · <%= e.activity_type %> · <%= h.fmtMinutes(e.duration_minutes) %></td><td class="small" data-label="When"><%= h.fmtDateTime(e.performed_at) %></td><td data-label="By"><%= e.user_name %></td><td class="small muted" data-label="Notes"><%= e.notes || '' %></td></tr>
     <% }) %>
     </tbody>
   </table></div>

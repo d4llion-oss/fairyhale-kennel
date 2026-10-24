@@ -8,18 +8,18 @@
 </div>
 <div class="card">
   <% if (!animals.length) { %><p class="muted">No animals yet.</p><% } else { %>
-  <div class="table-wrap"><table>
+  <div class="table-wrap"><table class="stack">
     <thead><tr><th>Name</th><th>Type / breed</th><th>Age</th><th>Diet</th><th>Medications</th><th class="num">Total time</th><th>Last activity</th></tr></thead>
     <tbody>
     <% animals.forEach(a => { %>
       <tr>
-        <td><div class="with-avatar"><a class="avatar-link" href="/animals/<%= a.id %>" title="Open <%= a.name %>'s profile"><% if (a.photo_id) { %><span class="avatar-box"><img src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt="<%= a.name %>" width="75" height="75"></span><% } else { %><span class="avatar-placeholder"></span><% } %></a><span><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <% if (!a.is_active) { %><span class="badge badge-neutral">archived</span><% } %></span></div></td>
-        <td><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></td>
-        <td><%= h.describeAge(a) %></td>
-        <td class="small"><%= a.dietary_requirements || '—' %></td>
-        <td class="small"><%= a.medications || '—' %></td>
-        <td class="num"><%= h.fmtMinutes(a.total_minutes) %></td>
-        <td class="small muted"><%= a.last_activity_at ? h.fmtDateTime(a.last_activity_at) : 'never' %></td>
+        <td class="primary"><div class="with-avatar"><a class="avatar-link" href="/animals/<%= a.id %>" title="Open <%= a.name %>'s profile"><% if (a.photo_id) { %><span class="avatar-box"><img src="/animals/<%= a.id %>/photos/<%= a.photo_id %>?size=thumb" alt="<%= a.name %>" width="75" height="75"></span><% } else { %><span class="avatar-placeholder"></span><% } %></a><span><a href="/animals/<%= a.id %>"><strong><%= a.name %></strong></a> <% if (!a.is_active) { %><span class="badge badge-neutral">archived</span><% } %></span></div></td>
+        <td data-label="Type"><%= a.animal_type %><%= a.breed ? ' · ' + a.breed : '' %></td>
+        <td data-label="Age"><%= h.describeAge(a) %></td>
+        <td class="small" data-label="Diet"><%= a.dietary_requirements || '—' %></td>
+        <td class="small" data-label="Meds"><%= a.medications || '—' %></td>
+        <td class="num" data-label="Total"><%= h.fmtMinutes(a.total_minutes) %></td>
+        <td class="small muted" data-label="Last"><%= a.last_activity_at ? h.fmtDateTime(a.last_activity_at) : 'never' %></td>
       </tr>
     <% }) %>
     </tbody>

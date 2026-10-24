@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1512">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FairyHale">
+  <link rel="manifest" href="/static/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/static/icon-180.png">
   <title><%= title %> · FairyHale Kennel</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%233f8f69'/><circle cx='11' cy='11' r='3' fill='%23f6efe3'/><circle cx='21' cy='11' r='3' fill='%23f6efe3'/><circle cx='7' cy='17' r='2.5' fill='%23f6efe3'/><circle cx='25' cy='17' r='2.5' fill='%23f6efe3'/><ellipse cx='16' cy='21' rx='6' ry='5' fill='%23f6efe3'/></svg>">
   <link rel="stylesheet" href="/static/app.css?v=<%= assetV %>">
@@ -28,6 +34,26 @@
     <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link">Sign out</button></form>
   </div>
 </header>
+<nav class="tabbar" aria-label="Primary">
+  <a href="/" class="<%= path === '/' ? 'active' : '' %>"><span class="ti">⌂</span>Home</a>
+  <a href="/animals" class="<%= path.startsWith('/animals') ? 'active' : '' %>"><span class="ti">🐾</span>Animals</a>
+  <a href="/activities/new" class="log <%= path.startsWith('/activities') ? 'active' : '' %>"><span class="ti">＋</span>Log</a>
+  <a href="/tasks" class="<%= path.startsWith('/tasks') ? 'active' : '' %>"><span class="ti">☑</span>Tasks</a>
+  <details class="more">
+    <summary class="<%= path.startsWith('/potty-groups') || path.startsWith('/admin') || path.startsWith('/account') ? 'active' : '' %>"><span class="ti">☰</span>More</summary>
+    <div class="more-panel">
+      <a href="/potty-groups">Potty groups</a>
+      <a href="/activities">Activity log</a>
+      <% if (user.role === 'admin') { %>
+        <a href="/admin/reports">Reports</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/audit">Audit log</a>
+      <% } %>
+      <a href="/account">My account</a>
+      <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link">Sign out</button></form>
+    </div>
+  </details>
+</nav>
 <% } %>
 <main class="page">
 <% if (flash) { %><div class="flash flash-<%= flash.type %>"><%= flash.text %></div><% } %>

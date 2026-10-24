@@ -1,22 +1,22 @@
 <%- include('../partials/head') %>
 <div class="page-head"><div><h1>Users</h1><p class="muted">Administrators manage animals, tasks, users and the audit log. Users log activity and complete tasks.</p></div></div>
-<div class="grid grid-2" style="grid-template-columns: 2fr 1fr">
+<div class="grid grid-2 users-grid">
   <div class="card">
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table class="stack">
       <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Created</th><th></th></tr></thead>
       <tbody>
       <% users.forEach(u => { const me = u.id === user.id; %>
         <tr>
-          <td><strong><%= u.display_name %></strong><div class="small muted">@<%= u.username %><%= me ? ' (you)' : '' %></div></td>
-          <td>
+          <td class="primary"><strong><%= u.display_name %></strong><div class="small muted">@<%= u.username %><%= me ? ' (you)' : '' %></div></td>
+          <td data-label="Role">
             <form method="post" action="/admin/users/<%= u.id %>/role" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <select name="role" data-autosubmit <%= me ? 'disabled' : '' %> style="width:auto;padding:.25rem .4rem">
                 <option value="user" <%= u.role==='user'?'selected':'' %>>user</option><option value="admin" <%= u.role==='admin'?'selected':'' %>>admin</option>
               </select></form>
           </td>
-          <td><span class="badge <%= u.is_active ? 'badge-ok' : 'badge-neutral' %>"><%= u.is_active ? 'active' : 'inactive' %></span></td>
-          <td class="small muted"><%= h.fmtDate(u.created_at) %></td>
-          <td style="white-space:nowrap">
+          <td data-label="Status"><span class="badge <%= u.is_active ? 'badge-ok' : 'badge-neutral' %>"><%= u.is_active ? 'active' : 'inactive' %></span></td>
+          <td class="small muted" data-label="Created"><%= h.fmtDate(u.created_at) %></td>
+          <td class="row-actions" style="white-space:nowrap">
             <% if (!me) { %>
             <form method="post" action="/admin/users/<%= u.id %>/active" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="active" value="<%= u.is_active ? '0' : '1' %>"><button class="btn btn-sm <%= u.is_active ? 'btn-danger' : 'btn-secondary' %>"><%= u.is_active ? 'Deactivate' : 'Activate' %></button></form>
             <% } %>

@@ -9,22 +9,22 @@
     <div><label>User</label><select name="user"><option value="">All</option><% users.forEach(u => { %><option <%= query.user===u?'selected':'' %>><%= u %></option><% }) %></select></div>
     <div><label>Search summary</label><div style="display:flex;gap:.5rem"><input type="text" name="q" value="<%= query.q %>"><button class="btn">Filter</button></div></div>
   </form>
-  <div class="table-wrap"><table>
+  <div class="table-wrap"><table class="stack">
     <thead><tr><th>#</th><th>Timestamp (UTC)</th><th>User</th><th>Action</th><th>Entity</th><th>Summary</th><th>IP</th></tr></thead>
     <tbody>
     <% entries.forEach(e => { %>
       <tr>
-        <td class="muted small"><%= e.id %></td>
-        <td class="small" style="white-space:nowrap"><%= new Date(e.occurred_at).toISOString().replace('T',' ').replace(/\.\d+Z$/,' Z') %></td>
-        <td><%= e.username || '—' %></td>
-        <td><span class="badge badge-type"><%= e.action %></span></td>
-        <td class="small"><%= e.entity_type %></td>
-        <td><%= e.summary %>
+        <td class="muted small" data-label="#"><%= e.id %></td>
+        <td class="small" data-label="Time" style="white-space:nowrap"><%= new Date(e.occurred_at).toISOString().replace('T',' ').replace(/\.\d+Z$/,' Z') %></td>
+        <td data-label="User"><%= e.username || '—' %></td>
+        <td data-label="Action"><span class="badge badge-type"><%= e.action %></span></td>
+        <td class="small" data-label="Entity"><%= e.entity_type %></td>
+        <td class="primary"><%= e.summary %>
           <% if (e.before_data || e.after_data) { %><details><summary>details</summary>
             <% if (e.before_data) { %><div class="small muted">Before</div><pre class="json"><%= JSON.stringify(e.before_data, null, 1) %></pre><% } %>
             <% if (e.after_data) { %><div class="small muted">After</div><pre class="json"><%= JSON.stringify(e.after_data, null, 1) %></pre><% } %>
           </details><% } %></td>
-        <td class="small muted"><%= e.ip_address || '' %></td>
+        <td class="small muted" data-label="IP"><%= e.ip_address || '' %></td>
       </tr>
     <% }) %>
     </tbody>

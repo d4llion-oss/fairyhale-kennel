@@ -18,8 +18,8 @@
           <div><span class="pg-badge pg-<%= g.color %>" style="font-size:1rem"><%= g.name %></span> <span class="muted small"><%= g.members.length %> animal<%= g.members.length === 1 ? '' : 's' %><%= g.last_outing ? ' · last out ' + h.fmtDateTime(g.last_outing.at) : '' %></span>
           <% if (g.notes) { %><div class="small muted" style="margin-top:.3rem"><%= g.notes %></div><% } %></div>
         </div>
-        <details class="thumb-menu" style="position:static"><summary class="btn btn-secondary btn-sm" style="list-style:none">Edit ▾</summary>
-          <div class="dropdown-panel" style="right:0;left:auto;min-width:280px">
+        <details class="menu"><summary class="btn btn-secondary btn-sm">Edit ▾</summary>
+          <div class="dropdown-panel" style="min-width:280px">
             <form method="post" action="/potty-groups/<%= g.id %>" class="stack" style="gap:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <input type="text" name="name" value="<%= g.name %>" maxlength="60" required>
               <input type="text" name="notes" value="<%= g.notes || '' %>" placeholder="Notes (e.g. no toys, short leash)" maxlength="200">

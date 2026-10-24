@@ -163,15 +163,15 @@
   <div class="card-head"><h2>Medications</h2><span class="muted small"><%= medications.filter(m => m.is_active).length %> active · today in <%= 'America/Chicago' %></span></div>
   <% const activeMeds = medications.filter(m => m.is_active), stoppedMeds = medications.filter(m => !m.is_active); %>
   <% if (!activeMeds.length) { %><p class="muted small" style="margin:.2rem 0 .8rem">No active medications.</p><% } else { %>
-  <div class="table-wrap"><table class="meds">
+  <div class="table-wrap"><table class="meds stack">
     <thead><tr><th>Medication</th><th>Dose · frequency</th><th>Given today</th><th>Notes</th><th></th></tr></thead>
     <tbody>
     <% activeMeds.forEach(m => { const given = m.today.length; const boxes = Math.max(m.expectedToday, given); %>
       <tr>
-        <td><button type="button" class="cond-chip" data-summary="/medications/summary" data-condition="<%= m.name %>" data-wiki="<%= m.wiki_title || '' %>" title="Show a summary of <%= m.name %>"><%= m.name %></button>
+        <td class="primary"><button type="button" class="cond-chip" data-summary="/medications/summary" data-condition="<%= m.name %>" data-wiki="<%= m.wiki_title || '' %>" title="Show a summary of <%= m.name %>"><%= m.name %></button>
           <div class="small muted">last given <%= m.last_given_at ? h.fmtDateTime(m.last_given_at) : 'never' %></div></td>
-        <td><%= m.dose || '' %><div class="small muted"><%= m.freq.label %></div></td>
-        <td>
+        <td data-label="Dose"><%= m.dose || '' %> <span class="small muted"><%= m.freq.label %></span></td>
+        <td data-label="Today">
           <div class="dose-boxes">
             <% for (let i = 0; i < boxes; i++) { const d = m.today[i]; %>
               <% if (d) { %>
@@ -193,10 +193,10 @@
           </div>
           <% if (m.expectedToday && given < m.expectedToday) { %><div class="small" style="color:var(--amber)"><%= m.expectedToday - given %> remaining</div><% } else if (m.expectedToday) { %><div class="small" style="color:var(--green-ink)">complete</div><% } %>
         </td>
-        <td class="small muted"><%= m.notes || '' %></td>
-        <td style="white-space:nowrap">
-          <details class="thumb-menu" style="position:static;display:inline-block"><summary class="btn btn-secondary btn-sm" style="list-style:none">Edit ▾</summary>
-            <div class="dropdown-panel" style="right:0;left:auto;min-width:260px">
+        <td class="small muted" data-label="Notes"><%= m.notes || '' %></td>
+        <td class="row-actions" style="white-space:nowrap">
+          <details class="menu"><summary class="btn btn-secondary btn-sm">Edit ▾</summary>
+            <div class="dropdown-panel" style="min-width:260px">
               <form method="post" action="/animals/<%= animal.id %>/medications/<%= m.id %>/notes" class="stack" style="gap:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <input type="text" name="dose" value="<%= m.dose || '' %>" placeholder="Dose (e.g. 50 mg)" maxlength="60">
                 <select name="frequency"><% Object.entries(medFrequencies).forEach(([k, f]) => { %><option value="<%= k %>" <%= m.frequency === k ? 'selected' : '' %>><%= f.label %></option><% }) %></select>
@@ -241,12 +241,12 @@
 <div class="card" style="margin-top:1rem">
   <h2>Activity history</h2>
   <% if (!entries.length) { %><p class="muted">Nothing logged yet.</p><% } else { %>
-  <div class="table-wrap"><table>
-    <thead><tr><th>When</th><th>Activity</th><th class="num">Time</th><th>By</th><th>Notes</th><% if (user.role==='admin') { %><th></th><% } %></tr></thead>
+  <div class="table-wrap"><table class="stack">
+    <thead><tr><th>Entry</th><th>When</th><th>By</th><th>Notes</th><% if (user.role==='admin') { %><th></th><% } %></tr></thead>
     <tbody>
     <% entries.forEach(e => { %>
-      <tr><td class="small"><%= h.fmtDateTime(e.performed_at) %></td><td><%= e.activity_type %></td><td class="num"><%= h.fmtMinutes(e.duration_minutes) %></td><td><%= e.user_name %></td><td class="small muted"><%= e.notes || '' %></td>
-      <% if (user.role==='admin') { %><td><form method="post" action="/activities/<%= e.id %>/delete" data-confirm="Remove this entry? The removal is recorded in the audit log."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm">Remove</button></form></td><% } %></tr>
+      <tr><td class="primary"><%= e.activity_type %> · <%= h.fmtMinutes(e.duration_minutes) %></td><td class="small" data-label="When"><%= h.fmtDateTime(e.performed_at) %></td><td data-label="By"><%= e.user_name %></td><td class="small muted" data-label="Notes"><%= e.notes || '' %></td>
+      <% if (user.role==='admin') { %><td class="row-actions"><form method="post" action="/activities/<%= e.id %>/delete" data-confirm="Remove this entry? The removal is recorded in the audit log."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm">Remove</button></form></td><% } %></tr>
     <% }) %>
     </tbody>
   </table></div>

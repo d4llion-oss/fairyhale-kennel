@@ -70,11 +70,11 @@
   </div>
   <% a.days.forEach(d => { %>
     <div class="day-head"><strong><%= dayLabel(d.date) %></strong><span class="muted small"><%= h.fmtMinutes(d.minutes) %> · <%= d.entries.length %> entr<%= d.entries.length === 1 ? 'y' : 'ies' %></span></div>
-    <div class="table-wrap"><table class="compact">
-      <thead><tr><th style="width:9%">Time</th><th style="width:20%">Activity</th><th class="num" style="width:10%">Duration</th><th style="width:17%">Staff</th><th>Notes</th></tr></thead>
+    <div class="table-wrap"><table class="compact stack">
+      <thead><tr><th>Entry</th><th>Staff</th><th>Notes</th></tr></thead>
       <tbody>
       <% d.entries.forEach(e => { %>
-        <tr><td class="small"><%= timeLabel(e.performed_at) %></td><td><%= e.activity_type %></td><td class="num"><%= h.fmtMinutes(e.duration_minutes) %></td><td><%= e.user_name %></td><td class="small muted"><%= e.notes || '' %></td></tr>
+        <tr><td class="primary"><%= timeLabel(e.performed_at) %> · <%= e.activity_type %> · <%= h.fmtMinutes(e.duration_minutes) %></td><td data-label="Staff"><%= e.user_name %></td><td class="small muted" data-label="Notes"><%= e.notes || '' %></td></tr>
       <% }) %>
       </tbody>
     </table></div>

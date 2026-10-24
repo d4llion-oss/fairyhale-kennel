@@ -10,16 +10,16 @@
 </div>
 <div class="card">
   <% if (!tasks.length) { %><p class="muted">No tasks defined yet.</p><% } else { %>
-  <div class="table-wrap"><table>
+  <div class="table-wrap"><table class="stack">
     <thead><tr><th>Task</th><th>Frequency</th><th>Status</th><th>Last done</th><th></th></tr></thead>
     <tbody>
     <% tasks.forEach(t => { %>
       <tr>
-        <td><strong><%= t.title %></strong> <% if (!t.is_active) { %><span class="badge badge-neutral">archived</span><% } %><% if (t.description) { %><div class="small muted"><%= t.description %></div><% } %></td>
-        <td><%= frequencies[t.frequency] %></td>
-        <td><% if (t.is_active) { %><span class="badge badge-<%= t.status %>"><%= { ok: 'On schedule', due_soon: 'Due soon', overdue: 'Overdue', as_needed: 'As needed' }[t.status] %></span><% } %></td>
-        <td class="small"><% if (t.last_completed_at) { %><%= h.fmtDateTime(t.last_completed_at) %><div class="muted">by <%= t.last_completed_by %></div><% } else { %><span class="muted">never</span><% } %></td>
-        <td style="white-space:nowrap">
+        <td class="primary"><strong><%= t.title %></strong> <% if (!t.is_active) { %><span class="badge badge-neutral">archived</span><% } %><% if (t.description) { %><div class="small muted"><%= t.description %></div><% } %></td>
+        <td data-label="Frequency"><%= frequencies[t.frequency] %></td>
+        <td data-label="Status"><% if (t.is_active) { %><span class="badge badge-<%= t.status %>"><%= { ok: 'On schedule', due_soon: 'Due soon', overdue: 'Overdue', as_needed: 'As needed' }[t.status] %></span><% } %></td>
+        <td class="small" data-label="Last done"><% if (t.last_completed_at) { %><%= h.fmtDateTime(t.last_completed_at) %><div class="muted">by <%= t.last_completed_by %></div><% } else { %><span class="muted">never</span><% } %></td>
+        <td class="row-actions" style="white-space:nowrap">
           <% if (t.is_active) { %>
           <form method="post" action="/tasks/<%= t.id %>/complete" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm">Mark done</button></form>
           <% } %>
