@@ -3,20 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0f1512">
+  <meta name="theme-color" content="#130d1c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FairyHale">
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icon-180.png">
-  <title><%= title %> · FairyHale Kennel</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%233f8f69'/><circle cx='11' cy='11' r='3' fill='%23f6efe3'/><circle cx='21' cy='11' r='3' fill='%23f6efe3'/><circle cx='7' cy='17' r='2.5' fill='%23f6efe3'/><circle cx='25' cy='17' r='2.5' fill='%23f6efe3'/><ellipse cx='16' cy='21' rx='6' ry='5' fill='%23f6efe3'/></svg>">
+  <title><%= title %> · FairyHale Kennels</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap">
   <link rel="stylesheet" href="/static/app.css?v=<%= assetV %>">
 </head>
 <body>
 <% if (user) { %>
 <header class="topbar">
-  <a class="brand" href="/"><span class="paw" aria-hidden="true"></span> FairyHale <small>Kennel</small></a>
+  <a class="brand" href="/"><img src="/static/castle-96.png" alt="" width="48" height="40"> FairyHale <small>Kennels</small></a>
   <nav>
     <a href="/" class="<%= path === '/' ? 'active' : '' %>">Dashboard</a>
     <a href="/animals" class="<%= path.startsWith('/animals') ? 'active' : '' %>">Animals</a>

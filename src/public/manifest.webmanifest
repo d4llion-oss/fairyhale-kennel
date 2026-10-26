@@ -4,8 +4,8 @@
   "description": "Kennel activity, medications and potty rotation for FairyHale staff.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#121715",
-  "theme_color": "#0f1512",
+  "background_color": "#130d1c",
+  "theme_color": "#130d1c",
   "icons": [
     { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png" },

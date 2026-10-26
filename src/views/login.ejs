@@ -1,8 +1,8 @@
 <%- include('partials/head') %>
 <div class="auth">
-  <div class="brand-big"><span class="paw" aria-hidden="true"></span></div>
-  <h1>FairyHale Kennel</h1>
-  <p class="muted" style="text-align:center;margin-top:0">Sign in to log your time with the animals.</p>
+  <div class="brand-big"><img src="/static/logo-640.png" alt="FairyHale Kennels" width="640" height="608"></div>
+  <h1>Welcome back</h1>
+  <p class="muted" style="text-align:center;margin-top:0">Sign in to care for the castle's guests.</p>
   <div class="card">
     <% if (error) { %><div class="errors"><%= error %></div><% } %>
     <form method="post" action="/login" class="stack">

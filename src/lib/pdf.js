@@ -2,7 +2,7 @@
 const PDFDocument = require('pdfkit');
 const { fmtMinutes } = require('./helpers');
 
-const INK = '#23302a', MUTED = '#6b766f', LINE = '#d9d2c4', GREEN = '#2f6b4f', SOFT = '#eef3ef';
+const INK = '#23302a', MUTED = '#6b766f', LINE = '#d9d2c4', GREEN = '#b82f87', SOFT = '#f9eef5';
 
 function fmtDate(iso) {
   return new Date(iso + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -17,7 +17,7 @@ function fmtTime(ts, tz) {
  * day-by-day table: time · activity · minutes · staff · notes.
  */
 function writeReportPdf(report, res, { generatedBy }) {
-  const doc = new PDFDocument({ size: 'LETTER', margin: 48, bufferPages: true, info: { Title: 'FairyHale Kennel activity report', Author: 'FairyHale Kennel Management' } });
+  const doc = new PDFDocument({ size: 'LETTER', margin: 48, bufferPages: true, info: { Title: 'FairyHale Kennels activity report', Author: 'FairyHale Kennels' } });
   doc.pipe(res);
 
   const pageW = doc.page.width - doc.page.margins.left - doc.page.margins.right;
@@ -26,7 +26,7 @@ function writeReportPdf(report, res, { generatedBy }) {
   const ensure = (h) => { if (doc.y + h > bottom()) doc.addPage(); };
 
   // ---- Title ----
-  doc.fillColor(GREEN).font('Helvetica-Bold').fontSize(20).text('FairyHale Kennel', left, doc.y);
+  doc.fillColor(GREEN).font('Helvetica-Bold').fontSize(20).text('FairyHale Kennels', left, doc.y);
   doc.fillColor(INK).fontSize(14).text(report.animal ? `Activity report — ${report.animal.name}` : 'Activity report — all animals');
   doc.moveDown(0.3);
   doc.font('Helvetica').fontSize(10).fillColor(MUTED)
@@ -108,7 +108,7 @@ function writeReportPdf(report, res, { generatedBy }) {
     for (let i = range.start; i < range.start + range.count; i++) {
       doc.switchToPage(i);
       doc.font('Helvetica').fontSize(8).fillColor(MUTED)
-        .text(`FairyHale Kennel · activity report · page ${i + 1} of ${range.count}`, left, doc.page.height - 32, { width: pageW, align: 'center', lineBreak: false });
+        .text(`FairyHale Kennels · activity report · page ${i + 1} of ${range.count}`, left, doc.page.height - 32, { width: pageW, align: 'center', lineBreak: false });
     }
     doc.end();
   }
