@@ -1,7 +1,7 @@
 'use strict';
 const { TZ } = require('./tz');
 
-const ACTIVITY_TYPES = ['Feeding', 'Walk', 'Medication', 'Grooming', 'Play / Enrichment', 'Cleaning', 'Training', 'Vet / Health Check', 'Other'];
+const ACTIVITY_TYPES = ['Feeding', 'Walk', 'Potty', 'Medication', 'Grooming', 'Play / Enrichment', 'Cleaning', 'Training', 'Vet / Health Check', 'Other'];
 const ANIMAL_TYPES = ['Dog', 'Cat', 'Rabbit', 'Bird', 'Reptile', 'Guinea Pig', 'Ferret', 'Other'];
 const FREQUENCIES = {
   daily: 'Daily',
