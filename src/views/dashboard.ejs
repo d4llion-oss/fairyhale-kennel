@@ -69,7 +69,7 @@
   </div>
 </div>
 
-<% const fmtT = (ts) => new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' });
+<% const fmtT = (ts) => new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz });
    const ago = (ts) => { const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000); return m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
    const withMembers = pottyGroups.filter(g => g.members.length);
    const nextIdx = withMembers.findIndex(g => !g.last_outing || (Date.now() - new Date(g.last_outing.at).getTime()) > 4 * 3600000); %>

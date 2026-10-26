@@ -1,4 +1,5 @@
 'use strict';
+const { TZ } = require('./tz');
 
 const ACTIVITY_TYPES = ['Feeding', 'Walk', 'Medication', 'Grooming', 'Play / Enrichment', 'Cleaning', 'Training', 'Vet / Health Check', 'Other'];
 const ANIMAL_TYPES = ['Dog', 'Cat', 'Rabbit', 'Bird', 'Reptile', 'Guinea Pig', 'Ferret', 'Other'];
@@ -34,12 +35,12 @@ function describeAge(animal) {
 
 function fmtDateTime(ts) {
   if (!ts) return '';
-  return new Date(ts).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  return new Date(ts).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: TZ });
 }
 
 function fmtDate(ts) {
   if (!ts) return '';
-  return new Date(ts).toLocaleDateString('en-US', { dateStyle: 'medium' });
+  return new Date(ts).toLocaleDateString('en-US', { dateStyle: 'medium', timeZone: TZ });
 }
 
 function fmtMinutes(min) {

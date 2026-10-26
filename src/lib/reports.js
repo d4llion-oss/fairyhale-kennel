@@ -2,9 +2,10 @@
 const db = require('../db');
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const TZ = process.env.REPORT_TIMEZONE || 'America/Chicago';
+const { TZ } = require('./tz');
 
-function isoDate(d) { return d.toISOString().slice(0, 10); }
+// Local (kennel-time) calendar date, YYYY-MM-DD. Avoids toISOString(), which is UTC.
+function isoDate(d) { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; }
 
 /** Parse ?from=YYYY-MM-DD&to=YYYY-MM-DD&animal=<uuid>; defaults to the last 30 days. */
 function parseRange(query) {

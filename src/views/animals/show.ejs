@@ -160,7 +160,7 @@
 </div>
 
 <div class="card" id="medications" style="margin-top:1rem">
-  <div class="card-head"><h2>Medications</h2><span class="muted small"><%= medications.filter(m => m.is_active).length %> active · today in <%= 'America/Chicago' %></span></div>
+  <div class="card-head"><h2>Medications</h2><span class="muted small"><%= medications.filter(m => m.is_active).length %> active · today in <%= tz %></span></div>
   <% const activeMeds = medications.filter(m => m.is_active), stoppedMeds = medications.filter(m => !m.is_active); %>
   <% if (!activeMeds.length) { %><p class="muted small" style="margin:.2rem 0 .8rem">No active medications.</p><% } else { %>
   <div class="table-wrap"><table class="meds stack">
@@ -177,8 +177,8 @@
               <% if (d) { %>
                 <form method="post" action="/animals/<%= animal.id %>/medications/<%= m.id %>/doses/<%= d.id %>/delete" class="inline dose" data-confirm="Undo this dose of <%= m.name %>?">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                  <label class="check given" title="Given <%= new Date(d.given_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' }) %> by <%= d.given_by || '—' %><%= d.notes ? ' — ' + d.notes : '' %>">
-                    <input type="checkbox" checked data-autosubmit> <span class="small"><%= new Date(d.given_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' }) %></span></label>
+                  <label class="check given" title="Given <%= new Date(d.given_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz }) %> by <%= d.given_by || '—' %><%= d.notes ? ' — ' + d.notes : '' %>">
+                    <input type="checkbox" checked data-autosubmit> <span class="small"><%= new Date(d.given_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz }) %></span></label>
                 </form>
               <% } else { %>
                 <form method="post" action="/animals/<%= animal.id %>/medications/<%= m.id %>/doses" class="inline dose">

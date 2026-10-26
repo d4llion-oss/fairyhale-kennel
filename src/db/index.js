@@ -1,5 +1,6 @@
 'use strict';
 require('dotenv').config();
+const { TZ } = require('../lib/tz');
 const { Pool } = require('pg');
 
 const rawUrl = process.env.DATABASE_URL;
@@ -46,7 +47,7 @@ if (wantsTls) {
 const SCHEMA = process.env.DATABASE_SCHEMA || 'kennel';
 if (!/^[a-z_][a-z0-9_]*$/.test(SCHEMA)) throw new Error('DATABASE_SCHEMA must be a simple identifier');
 
-const pool = new Pool({ connectionString, ssl, max: 10, options: `-c search_path=${SCHEMA}` });
+const pool = new Pool({ connectionString, ssl, max: 10, options: `-c search_path=${SCHEMA} -c timezone=${TZ}` });
 
 pool.on('error', (err) => {
   console.error('Unexpected PG pool error', err);

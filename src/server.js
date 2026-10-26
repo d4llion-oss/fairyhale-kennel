@@ -1,5 +1,6 @@
 'use strict';
 require('dotenv').config();
+const { TZ, toLocalInput } = require('./lib/tz'); // must run before any Date use
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
@@ -50,6 +51,8 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.csrfToken = csrf.generateToken(req, res);
   res.locals.h = helpers;
+  res.locals.tz = TZ;
+  res.locals.toLocalInput = toLocalInput;
   res.locals.assetV = ASSET_VERSION;
   res.locals.flash = req.session.flash || null;
   delete req.session.flash;

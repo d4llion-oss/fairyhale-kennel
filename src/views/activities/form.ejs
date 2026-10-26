@@ -52,7 +52,7 @@
         </div></div>
     </div>
     <div class="row">
-      <div><label for="performed_at">When <span class="opt">(blank = now)</span></label><input id="performed_at" name="performed_at" type="datetime-local" value="<%= entry.performed_at ? new Date(entry.performed_at).toISOString().slice(0,16) : '' %>"></div>
+      <div><label for="performed_at">When <span class="opt">(blank = now)</span></label><input id="performed_at" name="performed_at" type="datetime-local" value="<%= entry.performed_at ? toLocalInput(entry.performed_at) : '' %>"></div>
       <div><label for="notes">Notes <span class="opt">(optional)</span></label><textarea id="notes" name="notes" style="min-height:44px" placeholder="Ate all food, took meds without issue…"><%= entry.notes || '' %></textarea></div>
     </div>
     <div class="actions"><button class="btn" id="submit-btn">Save entry</button><a class="btn btn-secondary" href="<%= entry.animal_id ? '/animals/' + entry.animal_id : '/activities' %>">Cancel</a></div>
