@@ -119,6 +119,45 @@
   </div>
 </div>
 
+<div class="card" id="food" style="margin-top:1rem">
+  <div class="card-head"><h2>Food</h2><a class="btn btn-secondary btn-sm" href="/food">Pantry</a></div>
+  <% if (!animalFoods.length) { %>
+    <p class="muted small" style="margin:.2rem 0 .8rem">No food assigned to <%= animal.name %> yet.</p>
+  <% } else { %>
+  <ul class="list" style="margin-bottom:.8rem">
+    <% animalFoods.forEach(f => { %>
+      <li>
+        <div><strong><%= f.name %></strong> <span class="muted small"><%= f.brand ? f.brand + ' · ' : '' %><%= f.food_type %></span>
+          <% if (f.portion) { %><div class="small">🍽 <%= f.portion %></div><% } %>
+          <% if (f.notes) { %><div class="small muted"><%= f.notes %></div><% } %></div>
+        <div class="actions" style="align-items:center">
+          <span class="badge <%= f.low ? 'badge-due_soon' : 'badge-neutral' %>" title="In stock"><%= f.qty %> <%= f.unit %><%= f.low ? ' · low' : '' %></span>
+          <details class="menu"><summary class="btn btn-secondary btn-sm">Portion ▾</summary>
+            <div class="dropdown-panel" style="min-width:240px">
+              <form method="post" action="/animals/<%= animal.id %>/food" class="stack" style="gap:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="food_id" value="<%= f.id %>">
+                <input type="text" name="portion" value="<%= f.portion || '' %>" placeholder="e.g. 1 cup AM/PM" maxlength="80">
+                <input type="text" name="notes" value="<%= f.notes || '' %>" placeholder="Notes (soak, add water…)" maxlength="200">
+                <button class="btn btn-sm">Save</button></form>
+            </div></details>
+          <form method="post" action="/animals/<%= animal.id %>/food/<%= f.id %>/remove" class="inline" data-confirm="Remove <%= f.name %> from <%= animal.name %>?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link-btn" aria-label="Remove <%= f.name %>">×</button></form>
+        </div>
+      </li>
+    <% }) %>
+  </ul>
+  <% } %>
+  <% const assignable = allFoods.filter(f => !animalFoods.some(a => a.id === f.id)); %>
+  <form method="post" action="/animals/<%= animal.id %>/food" class="pg-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (assignable.length) { %>
+    <select name="food_id" aria-label="Food from pantry"><option value="">Choose from pantry…</option><% assignable.forEach(f => { %><option value="<%= f.id %>"><%= f.name %> (<%= f.qty %> <%= f.unit %>)</option><% }) %></select>
+    <span class="muted small">or</span>
+    <% } %>
+    <input type="text" name="name" placeholder="New food name" maxlength="120" aria-label="New food name">
+    <input type="text" name="portion" placeholder="Portion, e.g. 1 cup AM/PM" maxlength="80" aria-label="Portion">
+    <button class="btn btn-sm">Add</button>
+  </form>
+</div>
+
 <div class="card" id="potty-groups" style="margin-top:1rem">
   <div class="card-head"><h2>Potty groups</h2><a class="btn btn-secondary btn-sm" href="/potty-groups">Manage all groups</a></div>
   <% if (!pottyGroups.length) { %>

@@ -76,12 +76,13 @@ router.use('/:id/photos', require('./photos'));
 router.use('/:id/conditions', require('./conditions').perAnimal);
 router.use('/:id/medications', require('./medications').perAnimal);
 router.use('/:id/potty-groups', require('./potty-groups').perAnimal);
+router.use('/:id/food', require('./foods').perAnimal);
 
 router.get('/:id', async (req, res, next) => {
   try {
     const animal = await loadAnimal(req.params.id);
     if (!animal) return res.status(404).render('error', { title: 'Not found', status: 404, message: 'Animal not found.' });
-    const [entries, totals, photos, conds, meds, pottyGroups, allPotty] = await Promise.all([
+    const [entries, totals, photos, conds, meds, pottyGroups, allPotty, animalFoods, allFoodList] = await Promise.all([
       db.query(`SELECT e.*, u.display_name AS user_name FROM activity_entries e JOIN users u ON u.id=e.user_id
                 WHERE e.animal_id=$1 ORDER BY e.performed_at DESC LIMIT 100`, [animal.id]),
       db.query(`SELECT activity_type, SUM(duration_minutes)::int AS minutes, COUNT(*)::int AS n
@@ -92,8 +93,10 @@ router.get('/:id', async (req, res, next) => {
       require('./medications').listForAnimal(animal.id),
       require('./potty-groups').groupsForAnimal(animal.id),
       require('./potty-groups').allGroups(),
+      require('./foods').foodsForAnimal(animal.id),
+      require('./foods').allFoods(),
     ]);
-    res.render('animals/show', { title: animal.name, animal, entries: entries.rows, totals: totals.rows, photos: photos.rows, maxPhotos: 5, conditions: conds.rows, medications: meds, medFrequencies: require('./medications').FREQUENCIES, pottyGroups, allPottyGroups: allPotty, activityTypes: ACTIVITY_TYPES });
+    res.render('animals/show', { title: animal.name, animal, entries: entries.rows, totals: totals.rows, photos: photos.rows, maxPhotos: 5, conditions: conds.rows, medications: meds, medFrequencies: require('./medications').FREQUENCIES, pottyGroups, allPottyGroups: allPotty, animalFoods, allFoods: allFoodList, foodTypes: require('./foods').FOOD_TYPES, foodUnits: require('./foods').UNITS, activityTypes: ACTIVITY_TYPES });
   } catch (e) { next(e); }
 });
 

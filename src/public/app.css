@@ -397,3 +397,16 @@ label.check.given input { accent-color: #3f8f69; }
 .menu > summary { list-style: none; display: inline-block; }
 .menu > summary::-webkit-details-marker { display: none; }
 .menu .dropdown-panel { right: 0; left: auto; }
+
+/* Food inventory */
+.food-card.low { border-color: rgba(232,193,92,.45); }
+.food-card.out { border-color: rgba(255,122,147,.5); }
+.stock { text-align: right; white-space: nowrap; }
+.stock-n { font-family: "Cinzel", Georgia, serif; font-size: 1.5rem; color: var(--green-ink); line-height: 1.1; }
+.stock-u { font-size: .85rem; color: var(--muted); font-family: inherit; }
+.stock.low .stock-n, .stock.low .small { color: var(--amber); }
+.stock.out .stock-n, .stock.out .small { color: var(--red); }
+.stock-forms { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
+.stock-form { display: flex; gap: .3rem; align-items: center; }
+.stock-form input[type=number] { width: 92px; padding: .4rem .5rem; }
+@media (max-width: 640px) { .stock-forms { flex-direction: column; } .stock-form input[type=number] { flex: 1; width: auto; } }

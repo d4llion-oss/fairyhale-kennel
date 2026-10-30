@@ -289,3 +289,45 @@ CREATE TABLE IF NOT EXISTS potty_outings (
   notes       TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_potty_outings_group ON potty_outings (group_id, let_out_at DESC);
+
+-- ---------------------------------------------------------------
+-- Food inventory and which animals eat what
+-- ---------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS foods (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL,                 -- "Purina Pro Plan Adult Chicken"
+  brand         TEXT,
+  food_type     TEXT NOT NULL DEFAULT 'Dry kibble',  -- Dry kibble, Wet/canned, Raw, Hay, Pellets, Treats, Prescription, Other
+  quantity      NUMERIC(10,2) NOT NULL DEFAULT 0,    -- amount on hand
+  unit          TEXT NOT NULL DEFAULT 'lb',    -- lb, kg, oz, cans, bags, cups
+  low_threshold NUMERIC(10,2),                 -- flag when quantity <= this
+  notes         TEXT,
+  is_active     BOOLEAN NOT NULL DEFAULT TRUE,
+  created_by    UUID REFERENCES users(id),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_foods_name ON foods (lower(name));
+
+CREATE TABLE IF NOT EXISTS animal_foods (
+  animal_id   UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  food_id     UUID NOT NULL REFERENCES foods(id) ON DELETE CASCADE,
+  portion     TEXT,                            -- "1 cup AM/PM", "1/2 can"
+  notes       TEXT,
+  added_by    UUID REFERENCES users(id),
+  added_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (animal_id, food_id)
+);
+CREATE INDEX IF NOT EXISTS idx_animal_foods_food ON animal_foods (food_id);
+
+-- Stock adjustments (restock / use / count), for an audit of quantity changes
+CREATE TABLE IF NOT EXISTS food_stock_changes (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  food_id     UUID NOT NULL REFERENCES foods(id) ON DELETE CASCADE,
+  delta       NUMERIC(10,2) NOT NULL,
+  quantity_after NUMERIC(10,2) NOT NULL,
+  reason      TEXT,
+  changed_by  UUID REFERENCES users(id),
+  changed_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_food_stock_changes_food ON food_stock_changes (food_id, changed_at DESC);

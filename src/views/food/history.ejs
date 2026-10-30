@@ -1,0 +1,16 @@
+<%- include('../partials/head') %>
+<div class="page-head">
+  <div><h1><%= food.name %></h1><p class="muted">Stock history · currently <strong><%= food.qty %> <%= food.unit %></strong></p></div>
+  <div class="actions"><a class="btn btn-secondary" href="/food">← Back to food</a></div>
+</div>
+<div class="card">
+  <% if (!changes.length) { %><p class="muted" style="margin:0">No stock changes recorded.</p><% } else { %>
+  <div class="table-wrap"><table class="stack">
+    <thead><tr><th>Change</th><th>When</th><th>By</th><th>Reason</th></tr></thead>
+    <tbody><% changes.forEach(c => { %><tr>
+      <td class="primary"><span style="color:<%= Number(c.delta) >= 0 ? 'var(--green-ink)' : 'var(--red)' %>"><%= Number(c.delta) >= 0 ? '+' : '' %><%= fmtQty(c.delta) %> <%= food.unit %></span> <span class="muted small">→ <%= fmtQty(c.quantity_after) %> <%= food.unit %></span></td>
+      <td class="small" data-label="When"><%= h.fmtDateTime(c.changed_at) %></td><td data-label="By"><%= c.by_name || '—' %></td><td class="small muted" data-label="Reason"><%= c.reason || '' %></td></tr><% }) %></tbody>
+  </table></div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

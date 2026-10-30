@@ -26,6 +26,7 @@
     <a href="/activities" class="<%= path.startsWith('/activities') ? 'active' : '' %>">Activity</a>
     <a href="/tasks" class="<%= path.startsWith('/tasks') ? 'active' : '' %>">Tasks</a>
     <a href="/potty-groups" class="<%= path.startsWith('/potty-groups') ? 'active' : '' %>">Groups</a>
+    <a href="/food" class="<%= path.startsWith('/food') ? 'active' : '' %>">Food</a>
     <% if (user.role === 'admin') { %>
       <a href="/admin/reports" class="<%= path.startsWith('/admin/reports') ? 'active' : '' %>">Reports</a>
       <a href="/admin/users" class="<%= path.startsWith('/admin/users') ? 'active' : '' %>">Users</a>
@@ -43,9 +44,10 @@
   <a href="/activities/new" class="log <%= path.startsWith('/activities') ? 'active' : '' %>"><span class="ti">＋</span>Log</a>
   <a href="/tasks" class="<%= path.startsWith('/tasks') ? 'active' : '' %>"><span class="ti">☑</span>Tasks</a>
   <details class="more">
-    <summary class="<%= path.startsWith('/potty-groups') || path.startsWith('/admin') || path.startsWith('/account') ? 'active' : '' %>"><span class="ti">☰</span>More</summary>
+    <summary class="<%= path.startsWith('/potty-groups') || path.startsWith('/food') || path.startsWith('/admin') || path.startsWith('/account') ? 'active' : '' %>"><span class="ti">☰</span>More</summary>
     <div class="more-panel">
       <a href="/potty-groups">Potty groups</a>
+      <a href="/food">Food</a>
       <a href="/activities">Activity log</a>
       <% if (user.role === 'admin') { %>
         <a href="/admin/reports">Reports</a>

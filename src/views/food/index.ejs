@@ -1,0 +1,102 @@
+<%- include('../partials/head') %>
+<% const lowCount = foods.filter(f => f.is_active && (f.low || f.out)).length; %>
+<div class="page-head">
+  <div><h1>Food</h1><p class="muted">Everything in the pantry, how much is left, and who eats it.<% if (lowCount) { %> <strong style="color:var(--amber)"><%= lowCount %> running low.</strong><% } %></p></div>
+  <div class="actions"><a class="btn btn-secondary" href="/food<%= showAll ? '' : '?all=1' %>"><%= showAll ? 'Hide archived' : 'Show archived' %></a></div>
+</div>
+
+<div class="grid grid-2" style="align-items:start">
+  <div>
+    <% if (!foods.length) { %><div class="card"><p class="muted" style="margin:0">No food in the inventory yet — add the first one on the right.</p></div><% } %>
+    <% foods.forEach(f => { %>
+    <div class="card food-card <%= f.out ? 'out' : f.low ? 'low' : '' %>" style="margin-bottom:1rem">
+      <div class="card-head">
+        <div>
+          <h2 style="margin:0"><%= f.name %> <% if (!f.is_active) { %><span class="badge badge-neutral">archived</span><% } %></h2>
+          <div class="small muted"><%= f.brand ? f.brand + ' · ' : '' %><%= f.food_type %><%= f.notes ? ' · ' + f.notes : '' %></div>
+        </div>
+        <div class="stock <%= f.out ? 'out' : f.low ? 'low' : '' %>">
+          <div class="stock-n"><%= f.qty %> <span class="stock-u"><%= f.unit %></span></div>
+          <div class="small <%= f.out ? '' : f.low ? '' : 'muted' %>"><%= f.out ? 'Out of stock' : f.low ? 'Running low' : (f.low_threshold != null ? 'low at ' + fmtQty(f.low_threshold) : 'in stock') %></div>
+        </div>
+      </div>
+
+      <% if (f.is_active) { %>
+      <div class="stock-forms">
+        <form method="post" action="/food/<%= f.id %>/stock" class="stock-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="mode" value="add">
+          <input type="number" name="amount" step="0.25" min="0" placeholder="Amount" aria-label="Amount to add" required><button class="btn btn-sm">+ Restock</button></form>
+        <form method="post" action="/food/<%= f.id %>/stock" class="stock-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="mode" value="use">
+          <input type="number" name="amount" step="0.25" min="0" placeholder="Amount" aria-label="Amount used" required><button class="btn btn-secondary btn-sm">− Used</button></form>
+        <form method="post" action="/food/<%= f.id %>/stock" class="stock-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="mode" value="set">
+          <input type="number" name="amount" step="0.25" min="0" placeholder="Count" aria-label="Counted amount" required><button class="btn btn-secondary btn-sm">Set count</button></form>
+      </div>
+      <% } %>
+
+      <div class="small muted" style="margin:.6rem 0 .3rem">Eaten by<% if (f.eaters.length) { %> (<%= f.eaters.length %>)<% } %></div>
+      <% if (!f.eaters.length) { %><div class="small muted" style="margin-bottom:.5rem">No animals assigned yet.</div><% } else { %>
+      <ul class="pg-members" style="margin-bottom:.6rem">
+        <% f.eaters.forEach(e => { %>
+          <li><a href="/animals/<%= e.id %>#food" class="with-avatar" style="gap:.4rem;text-decoration:none"><% if (e.photo_id) { %><span class="avatar-box avatar-sm"><img src="/animals/<%= e.id %>/photos/<%= e.photo_id %>?size=thumb" alt=""></span><% } else { %><span class="avatar-placeholder avatar-sm"></span><% } %><span><strong><%= e.name %></strong> <span class="muted small"><%= e.animal_type %><%= e.portion ? ' · ' + e.portion : '' %><%= e.notes ? ' · ' + e.notes : '' %></span></span></a></li>
+        <% }) %>
+      </ul>
+      <% } %>
+
+      <div class="actions">
+        <details class="menu"><summary class="btn btn-secondary btn-sm">Who eats this ▾</summary>
+          <div class="dropdown-panel" style="min-width:280px">
+            <form method="post" action="/food/<%= f.id %>/eaters"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <div class="picker" style="max-height:260px;margin-bottom:.5rem">
+                <% animals.forEach(a => { %><label class="check"><input type="checkbox" name="animal_ids" value="<%= a.id %>" <%= f.eaters.some(e => e.id === a.id) ? 'checked' : '' %>> <%= a.name %> <span class="muted small"><%= a.animal_type %></span></label><% }) %>
+              </div>
+              <button class="btn btn-sm" style="width:100%">Save</button></form>
+            <div class="help">Portions are set on each animal's profile.</div>
+          </div></details>
+        <details class="menu"><summary class="btn btn-secondary btn-sm">Edit ▾</summary>
+          <div class="dropdown-panel" style="min-width:280px">
+            <form method="post" action="/food/<%= f.id %>" class="stack" style="gap:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="text" name="name" value="<%= f.name %>" maxlength="120" required>
+              <input type="text" name="brand" value="<%= f.brand || '' %>" placeholder="Brand" maxlength="80">
+              <select name="food_type"><% foodTypes.forEach(t => { %><option <%= f.food_type === t ? 'selected' : '' %>><%= t %></option><% }) %></select>
+              <div class="row"><select name="unit"><% units.forEach(u => { %><option <%= f.unit === u ? 'selected' : '' %>><%= u %></option><% }) %></select>
+                <input type="number" name="low_threshold" step="0.25" min="0" value="<%= f.low_threshold != null ? fmtQty(f.low_threshold) : '' %>" placeholder="Low-stock alert at"></div>
+              <input type="text" name="notes" value="<%= f.notes || '' %>" placeholder="Notes (storage, supplier…)" maxlength="200">
+              <button class="btn btn-sm">Save</button></form>
+            <a class="btn btn-secondary btn-sm" style="width:100%;margin-top:.4rem;text-align:center" href="/food/<%= f.id %>/history">Stock history</a>
+            <form method="post" action="/food/<%= f.id %>/active" style="margin-top:.4rem"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="active" value="<%= f.is_active ? '0' : '1' %>"><button class="btn <%= f.is_active ? 'btn-danger' : 'btn-secondary' %> btn-sm" style="width:100%"><%= f.is_active ? 'Archive food' : 'Restore food' %></button></form>
+          </div></details>
+        <% if (f.last_change) { %><span class="small muted">Last change <%= h.fmtDateTime(f.last_change.at) %><%= f.last_change.by ? ' by ' + f.last_change.by : '' %></span><% } %>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Add food</h2>
+      <form method="post" action="/food" class="stack">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div><label for="fname">Name</label><input id="fname" type="text" name="name" placeholder="e.g. Purina Pro Plan Adult Chicken" maxlength="120" required></div>
+        <div class="row">
+          <div><label for="fbrand">Brand <span class="opt">(optional)</span></label><input id="fbrand" type="text" name="brand" maxlength="80"></div>
+          <div><label for="ftype">Type</label><select id="ftype" name="food_type"><% foodTypes.forEach(t => { %><option><%= t %></option><% }) %></select></div>
+        </div>
+        <div class="row-3 row">
+          <div><label for="fqty">On hand</label><input id="fqty" type="number" name="quantity" step="0.25" min="0" placeholder="0"></div>
+          <div><label for="funit">Unit</label><select id="funit" name="unit"><% units.forEach(u => { %><option><%= u %></option><% }) %></select></div>
+          <div><label for="flow">Low alert at <span class="opt">(optional)</span></label><input id="flow" type="number" name="low_threshold" step="0.25" min="0"></div>
+        </div>
+        <div><label for="fnotes">Notes <span class="opt">(optional)</span></label><input id="fnotes" type="text" name="notes" placeholder="Storage, supplier, allergens…" maxlength="200"></div>
+        <div><label>Eaten by</label>
+          <div class="picker"><% animals.forEach(a => { %><label class="check"><input type="checkbox" name="animal_ids" value="<%= a.id %>"> <%= a.name %> <span class="muted small"><%= a.animal_type %></span></label><% }) %></div></div>
+        <button class="btn">Add food</button>
+      </form>
+    </div>
+    <% if (unfed.length) { %>
+    <div class="card" style="margin-top:1rem">
+      <h2>No food assigned <span class="muted small" style="font-family:inherit;font-weight:400">(<%= unfed.length %>)</span></h2>
+      <ul class="list"><% unfed.forEach(a => { %><li><a href="/animals/<%= a.id %>#food"><%= a.name %></a><span class="muted small"><%= a.animal_type %></span></li><% }) %></ul>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/foot') %>
