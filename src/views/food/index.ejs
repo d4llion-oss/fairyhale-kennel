@@ -73,9 +73,10 @@
   <div>
     <div class="card">
       <h2>Add food</h2>
-      <form method="post" action="/food" class="stack">
+      <form method="post" action="/food" class="stack" autocomplete="off" data-ac-form data-ac-url="/food/suggest" data-ac-fill="brand,food_type">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div><label for="fname">Name</label><input id="fname" type="text" name="name" placeholder="e.g. Purina Pro Plan Adult Chicken" maxlength="120" required></div>
+        <div><label for="fname">Name</label><div class="autocomplete"><input id="fname" type="text" name="name" placeholder="Start typing — e.g. Purina Pro Plan…" maxlength="120" required aria-autocomplete="list" aria-expanded="false" data-ac-input><ul class="ac-list" role="listbox" hidden></ul></div>
+          <div class="help">Suggests US dog foods by brand and line; pick one to fill in brand and type.</div></div>
         <div class="row">
           <div><label for="fbrand">Brand <span class="opt">(optional)</span></label><input id="fbrand" type="text" name="brand" maxlength="80"></div>
           <div><label for="ftype">Type</label><select id="ftype" name="food_type"><% foodTypes.forEach(t => { %><option><%= t %></option><% }) %></select></div>

@@ -146,13 +146,14 @@
   </ul>
   <% } %>
   <% const assignable = allFoods.filter(f => !animalFoods.some(a => a.id === f.id)); %>
-  <form method="post" action="/animals/<%= animal.id %>/food" class="pg-form">
+  <form method="post" action="/animals/<%= animal.id %>/food" class="pg-form" autocomplete="off" data-ac-form data-ac-url="/food/suggest" data-ac-fill="brand,food_type,food_id">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="brand" value=""><input type="hidden" name="food_type" value="">
     <% if (assignable.length) { %>
     <select name="food_id" aria-label="Food from pantry"><option value="">Choose from pantry…</option><% assignable.forEach(f => { %><option value="<%= f.id %>"><%= f.name %> (<%= f.qty %> <%= f.unit %>)</option><% }) %></select>
     <span class="muted small">or</span>
     <% } %>
-    <input type="text" name="name" placeholder="New food name" maxlength="120" aria-label="New food name">
+    <div class="autocomplete" style="flex:1;min-width:220px"><input type="text" name="name" placeholder="New food — start typing a brand" maxlength="120" aria-label="New food name" aria-autocomplete="list" aria-expanded="false" data-ac-input><ul class="ac-list" role="listbox" hidden></ul></div>
     <input type="text" name="portion" placeholder="Portion, e.g. 1 cup AM/PM" maxlength="80" aria-label="Portion">
     <button class="btn btn-sm">Add</button>
   </form>

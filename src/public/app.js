@@ -109,7 +109,7 @@
         var li = document.createElement('li');
         li.setAttribute('role', 'option'); li.setAttribute('aria-selected', i === active ? 'true' : 'false');
         var name = document.createElement('span'); name.textContent = it.name;
-        var src = document.createElement('span'); src.className = 'src'; src.textContent = it.source === 'wikipedia' ? 'Wikipedia' : '';
+        var src = document.createElement('span'); src.className = 'src'; src.textContent = it.source === 'wikipedia' ? 'Wikipedia' : it.source === 'pantry' ? 'in pantry' : (it.type || '');
         li.appendChild(name); li.appendChild(src);
         li.addEventListener('mousedown', function (ev) { ev.preventDefault(); choose(i); });
         list.appendChild(li);
@@ -118,7 +118,17 @@
     }
     function choose(i) {
       var it = items[i]; if (!it) return;
-      input.value = it.name; if (wiki) wiki.value = it.wiki || ''; close();
+      input.value = it.name; if (wiki) wiki.value = it.wiki || '';
+      // Optional: fill sibling fields named in data-ac-fill from the suggestion (brand, type, id…)
+      (form.dataset.acFill || '').split(',').forEach(function (k) {
+        k = k.trim(); if (!k) return;
+        var el = form.querySelector('[name="' + k + '"]'); if (!el) return;
+        var v = k === 'food_type' ? it.type : k === 'food_id' ? (it.id || '') : it[k];
+        if (v == null) return;
+        if (el.tagName === 'SELECT') { Array.prototype.forEach.call(el.options, function (o) { if (o.value === v || o.textContent === v) el.value = o.value; }); }
+        else el.value = v;
+      });
+      close();
       var next = form.querySelector('input[name=dose], input[name=notes]'); if (next) next.focus();
     }
     function fetchSuggestions() {

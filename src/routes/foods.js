@@ -7,6 +7,7 @@ const { clean } = require('../lib/helpers');
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FOOD_TYPES = ['Dry kibble', 'Wet / canned', 'Raw', 'Hay', 'Pellets', 'Fresh / produce', 'Treats', 'Prescription diet', 'Supplement', 'Other'];
+const DOG_FOODS = require('../lib/dog-foods-list');
 const UNITS = ['lb', 'kg', 'oz', 'g', 'cups', 'cans', 'pouches', 'bags', 'bales', 'bottles'];
 
 const num = (v) => { const n = parseFloat(String(v ?? '').replace(/,/g, '')); return Number.isFinite(n) ? Math.round(n * 100) / 100 : null; };
@@ -57,9 +58,34 @@ async function adjustStock(req, food, delta, reason, client = db) {
   return after;
 }
 
+/** Autocomplete against the curated US dog-food list (+ foods already in the pantry). */
+function suggestFoods(q, pantry) {
+  const fold = (x) => String(x || '').toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
+  const query = fold(q);
+  if (query.length < 2) return [];
+  const words = query.split(' ');
+  const score = (name, brand) => {
+    const n = fold(name), b = fold(brand);
+    if (n.startsWith(query)) return 0;
+    if (b.startsWith(query)) return 1;
+    if (words.every((w) => n.includes(w))) return 2;
+    return -1;
+  };
+  const seen = new Set(); const out = [];
+  for (const f of pantry) { const sc = score(f.name, f.brand); if (sc >= 0) { seen.add(fold(f.name)); out.push({ sc: sc - 0.5, name: f.name, brand: f.brand, type: f.food_type, source: 'pantry', id: f.id }); } }
+  for (const f of DOG_FOODS) { if (seen.has(fold(f.name))) continue; const sc = score(f.name, f.brand); if (sc >= 0) out.push({ sc, name: f.name, brand: f.brand, type: f.type, source: 'list' }); }
+  return out.sort((a, b) => a.sc - b.sc || a.name.localeCompare(b.name)).slice(0, 10).map(({ sc, ...r }) => r);
+}
+
 // ---- Food inventory page (mounted at /food) ----
 const foods = express.Router();
 foods.use(requireLogin);
+
+foods.get('/suggest', async (req, res) => {
+  const { rows } = await db.query('SELECT id, name, brand, food_type FROM foods WHERE is_active ORDER BY name');
+  res.setHeader('Cache-Control', 'private, max-age=120');
+  res.json(suggestFoods(String(req.query.q || '').slice(0, 80), rows));
+});
 foods.param('fid', (req, res, next, id) => (UUID.test(id) ? next() : res.status(404).render('error', { title: 'Not found', status: 404, message: 'Food not found.' })));
 
 foods.get('/', async (req, res, next) => {
@@ -189,7 +215,7 @@ perAnimal.post('/', async (req, res, next) => {
     const name = clean(req.body.name)?.slice(0, 120);
     let food;
     if (fid) food = await loadFood(fid);
-    else if (name) food = (await findOrCreateFood(req, { name, food_type: req.body.food_type, unit: req.body.unit })).food;
+    else if (name) food = (await findOrCreateFood(req, { name, brand: clean(req.body.brand)?.slice(0, 80), food_type: req.body.food_type, unit: req.body.unit })).food;
     if (!food) { req.session.flash = { type: 'error', text: 'Choose a food or type a name for a new one.' }; return res.redirect(`/animals/${animal.id}#food`); }
     const portion = clean(req.body.portion)?.slice(0, 80) || null, notes = clean(req.body.notes)?.slice(0, 200) || null;
     const { rowCount } = await db.query(
